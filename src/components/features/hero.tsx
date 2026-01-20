@@ -1,19 +1,38 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight, Sparkles, Moon } from "lucide-react"
 import { toast } from "sonner"
 import { TripItinerary, TripData } from "./trip-itinerary"
 
+// Rotating placeholder suggestions
+const placeholderSuggestions = [
+    "3 day trip to Chicago",
+    "5 day trip to Dubai",
+    "7 day adventure in Bali",
+    "Weekend getaway to Paris",
+    "10 days exploring Japan",
+    "4 days in Marrakech",
+    "Beach vacation in Maldives",
+]
+
 export function Hero() {
-    // ... inside Hero component
     const [isHalal, setIsHalal] = useState(false)
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
     const [tripData, setTripData] = useState<TripData | null>(null)
+    const [placeholderIndex, setPlaceholderIndex] = useState(0)
+
+    // Rotate placeholder every 2 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPlaceholderIndex((prev) => (prev + 1) % placeholderSuggestions.length)
+        }, 2000)
+        return () => clearInterval(interval)
+    }, [])
 
     const handlePlanTrip = async () => {
         if (!input.trim()) return
@@ -127,7 +146,7 @@ export function Hero() {
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handlePlanTrip()}
                                     disabled={loading}
-                                    placeholder={isHalal ? "Find me a private villa in Turkey..." : "Where do you want to wake up tomorrow?"}
+                                    placeholder={placeholderSuggestions[placeholderIndex]}
                                     className="flex-1 bg-transparent border-0 outline-none text-white placeholder:text-white/50 text-lg py-3"
                                 />
                                 <Button
