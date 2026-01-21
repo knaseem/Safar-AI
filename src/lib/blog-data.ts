@@ -16,7 +16,7 @@ export const blogPosts: BlogPost[] = [
         title: "AlUla: A Journey Through Time",
         excerpt: "Explore the ancient Nabataean tombs of Hegra and the stunning desert landscapes of this living museum.",
         category: "Destinations",
-        image: "https://images.unsplash.com/photo-1545070277-22442478544d?q=80&w=2070&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1542401886-65d6c61db217?q=80&w=2070&auto=format&fit=crop",
         readTime: "9 min",
         date: "2025-01-20",
         featured: true
@@ -26,7 +26,7 @@ export const blogPosts: BlogPost[] = [
         title: "The Red Sea Project: Sustainable Luxury Redefined",
         excerpt: "Pristine coral reefs, dormant volcanoes, and ultra-luxury resorts in the world's most ambitious tourism project.",
         category: "Luxury & Lifestyle",
-        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1512413914633-b5043f4041ea?q=80&w=2079&auto=format&fit=crop",
         readTime: "8 min",
         date: "2025-01-19",
         featured: true
@@ -36,7 +36,7 @@ export const blogPosts: BlogPost[] = [
         title: "Riyadh Season & Diriyah: diverse entertainment",
         excerpt: "From world-class concerts to the mud-brick palaces of At-Turaif—Riyadh's transformation is unmissable.",
         category: "Destinations",
-        image: "https://images.unsplash.com/photo-1581079313203-31644e5485d5?q=80&w=2070&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1575608670177-33d30b91e133?q=80&w=2012&auto=format&fit=crop",
         readTime: "7 min",
         date: "2025-01-18"
     },
@@ -45,7 +45,7 @@ export const blogPosts: BlogPost[] = [
         title: "Jeddah Al-Balad: Heritage & Art Scene",
         excerpt: "Wander the coral stone alleyways of this UNESCO site, now a hub for contemporary art and culture.",
         category: "Destinations",
-        image: "https://images.unsplash.com/photo-1565552393322-861f6874c43a?q=80&w=2070&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1552554740-974a62174d81?q=80&w=2059&auto=format&fit=crop",
         readTime: "6 min",
         date: "2025-01-17"
     },
@@ -54,7 +54,7 @@ export const blogPosts: BlogPost[] = [
         title: "Edge of the World: Riyadh's Dramatic Cliffs",
         excerpt: "A breathtaking hiking adventure just outside the capital, offering views that stretch to the horizon.",
         category: "Travel Tips",
-        image: "https://images.unsplash.com/photo-1549557404-539095698b64?q=80&w=2070&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=2011&auto=format&fit=crop",
         readTime: "5 min",
         date: "2025-01-16"
     },
