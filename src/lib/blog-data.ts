@@ -26,7 +26,7 @@ export const blogPosts: BlogPost[] = [
         title: "The Red Sea Project: Sustainable Luxury Redefined",
         excerpt: "Pristine coral reefs, dormant volcanoes, and ultra-luxury resorts in the world's most ambitious tourism project.",
         category: "Luxury & Lifestyle",
-        image: "https://images.unsplash.com/photo-1512413914633-b5043f4041ea?q=80&w=2079&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?q=80&w=2642&auto=format&fit=crop",
         readTime: "8 min",
         date: "2025-01-19",
         featured: true
