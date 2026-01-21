@@ -26,7 +26,7 @@ export const blogPosts: BlogPost[] = [
         title: "Istanbul's Kebab Trail: A Foodie Guide",
         excerpt: "Skip the tourist traps. We take you to the backstreet ocakbaşıs serving the juiciest Adana and Iskender kebabs.",
         category: "Food & Dining",
-        image: "https://images.unsplash.com/photo-1633330602061-0081d5967732?q=80&w=2670&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=2150&auto=format&fit=crop",
         readTime: "8 min",
         date: "2025-01-19"
     },
@@ -53,7 +53,7 @@ export const blogPosts: BlogPost[] = [
         title: "NYC: Halal Carts vs. Fine Dining",
         excerpt: "The chicken and rice phenomenon vs. upscale eats—exploring the full spectrum of New York's halal scene.",
         category: "Food & Dining",
-        image: "https://images.unsplash.com/photo-1569431416568-7c859cd6251b?q=80&w=2574&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1529563021893-cc83c914d5d3?q=80&w=2070&auto=format&fit=crop",
         readTime: "7 min",
         date: "2025-01-16"
     },
@@ -93,7 +93,7 @@ export const blogPosts: BlogPost[] = [
         title: "Jeddah Al-Balad: Heritage & Art Scene",
         excerpt: "Wander the coral stone alleyways of this UNESCO site, now a hub for contemporary art and culture.",
         category: "Destinations",
-        image: "https://images.unsplash.com/photo-1565553642973-6ffe78c1877f?q=80&w=2670&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1552554740-974a62174d81?q=80&w=2059&auto=format&fit=crop",
         readTime: "6 min",
         date: "2025-01-12"
     },
