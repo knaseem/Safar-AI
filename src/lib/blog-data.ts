@@ -53,7 +53,7 @@ export const blogPosts: BlogPost[] = [
         title: "NYC: Halal Carts vs. Fine Dining",
         excerpt: "The chicken and rice phenomenon vs. upscale eats—exploring the full spectrum of New York's halal scene.",
         category: "Food & Dining",
-        image: "https://images.unsplash.com/photo-1567129937968-cdad8f0d221f?q=80&w=2070&auto=format&fit=crop",
+        image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/The_Halal_Guys_NYC.jpg",
         readTime: "7 min",
         date: "2025-01-16"
     },
@@ -93,7 +93,7 @@ export const blogPosts: BlogPost[] = [
         title: "Jeddah Al-Balad: Heritage & Art Scene",
         excerpt: "Wander the coral stone alleyways of this UNESCO site, now a hub for contemporary art and culture.",
         category: "Destinations",
-        image: "https://images.unsplash.com/photo-1565552393322-861f6874c43a?q=80&w=2670&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1583344161730-8d5ba4296ca9?q=80&w=2670&auto=format&fit=crop",
         readTime: "6 min",
         date: "2025-01-12"
     },
