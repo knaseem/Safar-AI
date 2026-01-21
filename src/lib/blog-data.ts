@@ -53,9 +53,56 @@ export const blogPosts: BlogPost[] = [
         title: "NYC: Halal Carts vs. Fine Dining",
         excerpt: "The chicken and rice phenomenon vs. upscale eats—exploring the full spectrum of New York's halal scene.",
         category: "Food & Dining",
-        image: "https://upload.wikimedia.org/wikipedia/commons/e/ee/The_Halal_Guys_NYC.jpg",
+        image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop",
         readTime: "7 min",
         date: "2025-01-16"
+    },
+
+    // FOOD & DINING (New Batch 2)
+    {
+        slug: "moroccan-tagine-guide",
+        title: "The Art of Tagine: Culinary Magic in Morocco",
+        excerpt: "Slow-cooked lamb, preserved lemons, and the secrets of the clay pot.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?q=80&w=2070&auto=format&fit=crop",
+        readTime: "6 min",
+        date: "2025-01-15"
+    },
+    {
+        slug: "hong-kong-dim-sum",
+        title: "Dim Sum Decoded: A Hong Kong Breakfast",
+        excerpt: "Navigating the trolley carts and bamboo steamers for the perfect har gow and siu mai.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-14"
+    },
+    {
+        slug: "mumbai-street-food",
+        title: "Mumbai Street Food: Spice, Chaos, and Flavor",
+        excerpt: "From Vada Pav to Pav Bhaji—a fearless guide to India's most delicious street eats.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1530785602389-07594beb8b73?q=80&w=2070&auto=format&fit=crop",
+        readTime: "6 min",
+        date: "2025-01-13"
+    },
+    {
+        slug: "italian-gelato-guide",
+        title: "Finding Real Gelato in Italy",
+        excerpt: "How to spot the artisanal gems and avoid the tourist mounds. Hint: Look for muted colors.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1557142046-c704a3adf364?q=80&w=2070&auto=format&fit=crop",
+        readTime: "5 min",
+        date: "2025-01-12"
+    },
+    {
+        slug: "beirut-dining-guide",
+        title: "Beirut: The Culinary Capital of the Middle East",
+        excerpt: "Mezze spreads that last for hours—dining culture in the Paris of the Middle East.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2025-01-11"
     },
 
     // SAUDI ARABIA (New)
@@ -93,7 +140,7 @@ export const blogPosts: BlogPost[] = [
         title: "Jeddah Al-Balad: Heritage & Art Scene",
         excerpt: "Wander the coral stone alleyways of this UNESCO site, now a hub for contemporary art and culture.",
         category: "Destinations",
-        image: "https://images.unsplash.com/photo-1583344161730-8d5ba4296ca9?q=80&w=2670&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1663900108404-a05e8bf82cda?q=80&w=2070&auto=format&fit=crop",
         readTime: "6 min",
         date: "2025-01-12"
     },
@@ -104,6 +151,100 @@ export const blogPosts: BlogPost[] = [
         category: "Travel Tips",
         image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=2011&auto=format&fit=crop",
         readTime: "5 min",
+        date: "2025-01-11"
+    },
+
+    // DESTINATIONS (New Batch)
+    {
+        slug: "kyoto-autumn-guide",
+        title: "Kyoto in Autumn: A Red & Gold Dream",
+        excerpt: "Witness the fiery maples of Arashiyama and the serene temples of Eastern Kyoto in peak foliage season.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2025-01-20"
+    },
+    {
+        slug: "amalfi-coast-road-trip",
+        title: "Driving the Amalfi Coast: Potisano to Ravello",
+        excerpt: "Navigating Italy's most scenic and terrifying coastal road, stopping for lemons and luxury views.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1540946485063-a40da27545f8?q=80&w=2070&auto=format&fit=crop",
+        readTime: "9 min",
+        date: "2025-01-19"
+    },
+    {
+        slug: "cape-town-adventures",
+        title: "Cape Town: Where Ocean Meets Mountain",
+        excerpt: "Hiking Table Mountain, spotting penguins at Boulders Beach, and dining in the Winelands.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-18"
+    },
+    {
+        slug: "iceland-ring-road",
+        title: "Iceland's Ring Road: The Ultimate Road Trip",
+        excerpt: "Waterfalls, glaciers, and black sand beaches—a 10-day itinerary around the Land of Fire and Ice.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=2070&auto=format&fit=crop",
+        readTime: "12 min",
+        date: "2025-01-17"
+    },
+    {
+        slug: "new-zealand-south-island",
+        title: "New Zealand's South Island: Nature's Masterpiece",
+        excerpt: "From Milford Sound to Queenstown, exploring the most dramatic landscapes on Earth.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=2070&auto=format&fit=crop",
+        readTime: "11 min",
+        date: "2025-01-16"
+    },
+
+    // DESTINATIONS (Expansion Batch)
+    {
+        slug: "petra-jordan-guide",
+        title: "Petra: The Rose City of Jordan",
+        excerpt: "Walking through the Siq to discover the Treasury, monasteries, and ancient Nabataean wonders.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1548786811-dd6e453ccca7?q=80&w=2070&auto=format&fit=crop",
+        readTime: "9 min",
+        date: "2025-01-15"
+    },
+    {
+        slug: "patagonia-adventure",
+        title: "Patagonia: At the Edge of the World",
+        excerpt: "Glaciers, granite towers, and endless horizons—trekking through Argentina and Chile's wild south.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1531761535209-180857e963b9?q=80&w=2070&auto=format&fit=crop",
+        readTime: "10 min",
+        date: "2025-01-14"
+    },
+    {
+        slug: "cinque-terre-italy",
+        title: "Cinque Terre: Italy's Colorful Cliffside Villages",
+        excerpt: "Hiking the trails between five pastel-painted fishing villages on the Italian Riviera.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-13"
+    },
+    {
+        slug: "vietnam-ha-long-bay",
+        title: "Ha Long Bay: Emerald Waters & Limestone Giants",
+        excerpt: "Cruising through 1,600 islands and caves in Vietnam's most iconic UNESCO seascape.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2025-01-12"
+    },
+    {
+        slug: "zanzibar-spice-island",
+        title: "Zanzibar: Tanzania's Tropical Paradise",
+        excerpt: "White sand beaches, Stone Town's history, and the aromatic spice farms of the Indian Ocean.",
+        category: "Destinations",
+        image: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
         date: "2025-01-11"
     },
 
@@ -200,6 +341,53 @@ export const blogPosts: BlogPost[] = [
         date: "2025-01-01"
     },
 
+    // TRAVEL TIPS (New Batch)
+    {
+        slug: "beating-jet-lag",
+        title: "Science-Backed Strategies to Beat Jet Lag",
+        excerpt: "Light exposure, fasting, and melatonin: how to adjust your body clock faster.",
+        category: "Travel Tips",
+        image: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?q=80&w=2070&auto=format&fit=crop",
+        readTime: "6 min",
+        date: "2025-01-10"
+    },
+    {
+        slug: "travel-photography-basics",
+        title: "Travel Photography: Beyond the Selfie",
+        excerpt: "Composition tips and lighting tricks to capture professional-looking vacation photos.",
+        category: "Travel Tips",
+        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2025-01-09"
+    },
+    {
+        slug: "smart-packing-hacks",
+        title: "Packing Hacks Pros Swear By",
+        excerpt: "Rolling vs. folding, packing cubes, and the capsule wardrobe method.",
+        category: "Travel Tips",
+        image: "https://images.unsplash.com/photo-1515688594390-b649af70d282?q=80&w=2070&auto=format&fit=crop",
+        readTime: "5 min",
+        date: "2025-01-08"
+    },
+    {
+        slug: "esim-travel-guide",
+        title: "Why You Need an eSIM for Travel",
+        excerpt: "Stop overpaying for roaming. The ultimate guide to staying connected abroad cheaply.",
+        category: "Travel Tips",
+        image: "https://images.unsplash.com/photo-1516387938699-a93567ec168e?q=80&w=2070&auto=format&fit=crop",
+        readTime: "4 min",
+        date: "2025-01-07"
+    },
+    {
+        slug: "sustainable-travel-101",
+        title: "Sustainable Travel: Leaving No Trace",
+        excerpt: "How to reduce your footprint and support local communities while exploring the world.",
+        category: "Travel Tips",
+        image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-06"
+    },
+
     // TRAVEL TIPS
     {
         slug: "find-halal-food-anywhere",
@@ -293,6 +481,53 @@ export const blogPosts: BlogPost[] = [
         date: "2024-12-26"
     },
 
+    // LUXURY & LIFESTYLE (New Batch)
+    {
+        slug: "luxury-glamping-sahara",
+        title: "Glamping Under the Stars in the Sahara",
+        excerpt: "Private tents, gourmet dining, and silence in the dunes. The ultimate desert escape.",
+        category: "Luxury & Lifestyle",
+        image: "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2025-01-05"
+    },
+    {
+        slug: "private-jet-charter-guide",
+        title: "Flying Private: A First-Timer's Guide",
+        excerpt: "Empty legs, jet cards, and what to expect on your first private charter flight.",
+        category: "Luxury & Lifestyle",
+        image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-04"
+    },
+    {
+        slug: "underwater-hotels-guide",
+        title: "Sleeping with Sharks: Best Underwater Hotels",
+        excerpt: "From the Maldives to Dubai, the most incredible submerged suites in the world.",
+        category: "Luxury & Lifestyle",
+        image: "https://images.unsplash.com/photo-1530053969600-caed2596d242?q=80&w=2070&auto=format&fit=crop",
+        readTime: "6 min",
+        date: "2025-01-03"
+    },
+    {
+        slug: "luxury-train-journeys",
+        title: "Golden Age of Travel: Luxury Train Journeys",
+        excerpt: "Slow travel at its finest. The Orient Express, The Blue Train, and more.",
+        category: "Luxury & Lifestyle",
+        image: "https://images.unsplash.com/photo-1540339832862-474599807836?q=80&w=2070&auto=format&fit=crop",
+        readTime: "9 min",
+        date: "2025-01-02"
+    },
+    {
+        slug: "milan-fashion-week-travel",
+        title: "Milan Fashion Week: The Insider's Guide",
+        excerpt: "Where to stay, eat, and shop during the world's most stylish week.",
+        category: "Luxury & Lifestyle",
+        image: "https://images.unsplash.com/photo-1537832816519-689ad163238b?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-01"
+    },
+
     // LUXURY & LIFESTYLE (5)
     {
         slug: "worlds-best-luxury-halal-resorts",
@@ -341,3 +576,34 @@ export const blogPosts: BlogPost[] = [
         date: "2024-12-21"
     }
 ]
+
+// Deterministic shuffle based on date string
+function deterministicShuffle<T>(array: T[], seed: string): T[] {
+    const shuffled = [...array]
+    let hash = 0
+    for (let i = 0; i < seed.length; i++) {
+        hash = (hash << 5) - hash + seed.charCodeAt(i)
+        hash |= 0
+    }
+
+    // Mulberry32-inspired PRNG
+    const random = () => {
+        let t = (hash += 0x6d2b79f5)
+        t = Math.imul(t ^ (t >>> 15), t | 1)
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1))
+            ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+
+    return shuffled
+}
+
+export function getDailyFeaturedPosts(): BlogPost[] {
+    const today = new Date().toISOString().split('T')[0] // e.g. "2025-01-20"
+    const shuffled = deterministicShuffle(blogPosts, today)
+    return shuffled.slice(0, 8)
+}

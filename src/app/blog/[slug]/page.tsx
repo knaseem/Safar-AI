@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/navbar"
 import { Button } from "@/components/ui/button"
 
 interface Props {
-    params: { slug: string }
+    params: Promise<{ slug: string }>
 }
 
 export async function generateStaticParams() {
@@ -16,7 +16,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props) {
-    const post = blogPosts.find((p) => p.slug === params.slug)
+    const { slug } = await params
+    const post = blogPosts.find((p) => p.slug === slug)
     if (!post) return { title: "Not Found" }
 
     return {
@@ -56,8 +57,9 @@ function generateArticleContent(post: BlogPost): string[] {
     ]
 }
 
-export default function BlogArticlePage({ params }: Props) {
-    const post = blogPosts.find((p) => p.slug === params.slug)
+export default async function BlogArticlePage({ params }: Props) {
+    const { slug } = await params
+    const post = blogPosts.find((p) => p.slug === slug)
 
     if (!post) {
         notFound()
