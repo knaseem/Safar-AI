@@ -2,7 +2,7 @@ export interface BlogPost {
     slug: string
     title: string
     excerpt: string
-    category: "Destinations" | "Travel Tips" | "Luxury & Lifestyle" | "Halal Travel"
+    category: "Destinations" | "Travel Tips" | "Luxury & Lifestyle" | "Halal Travel" | "Food & Dining"
     image: string
     readTime: string
     date: string
@@ -10,6 +10,54 @@ export interface BlogPost {
 }
 
 export const blogPosts: BlogPost[] = [
+    // FOOD & DINING (New)
+    {
+        slug: "london-halal-fine-dining",
+        title: "London's Best Halal Fine Dining",
+        excerpt: "From Michelin-starred Indian to high-end steakhouses—the ultimate guide to luxury halal eating in London.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-20",
+        featured: true
+    },
+    {
+        slug: "istanbul-kebab-trail",
+        title: "Istanbul's Kebab Trail: A Foodie Guide",
+        excerpt: "Skip the tourist traps. We take you to the backstreet ocakbaşıs serving the juiciest Adana and Iskender kebabs.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=2150&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2025-01-19"
+    },
+    {
+        slug: "bangkok-halal-street-food",
+        title: "Bangkok's Halal Street Food Secrets",
+        excerpt: "Where to find the best halal Pad Thai, crispy chicken, and mango sticky rice in Thailand's chaotic capital.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?q=80&w=2070&auto=format&fit=crop",
+        readTime: "6 min",
+        date: "2025-01-18"
+    },
+    {
+        slug: "paris-patisserie-tour",
+        title: "Sweet Paris: A Muslim Traveler's Guide",
+        excerpt: "Navigating gelatine-free pastries and finding the best croissants, macarons, and éclairs in Paris.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1550617931-e17a7b70dce2?q=80&w=2070&auto=format&fit=crop",
+        readTime: "5 min",
+        date: "2025-01-17"
+    },
+    {
+        slug: "nyc-halal-cart-vs-restaurant",
+        title: "NYC: Halal Carts vs. Fine Dining",
+        excerpt: "The chicken and rice phenomenon vs. upscale eats—exploring the full spectrum of New York's halal scene.",
+        category: "Food & Dining",
+        image: "https://images.unsplash.com/photo-1529563021893-cc83c914d5d3?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2025-01-16"
+    },
+
     // SAUDI ARABIA (New)
     {
         slug: "alula-journey-through-time",
@@ -18,7 +66,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1542401886-65d6c61db217?q=80&w=2070&auto=format&fit=crop",
         readTime: "9 min",
-        date: "2025-01-20",
+        date: "2025-01-15",
         featured: true
     },
     {
@@ -28,7 +76,7 @@ export const blogPosts: BlogPost[] = [
         category: "Luxury & Lifestyle",
         image: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?q=80&w=2642&auto=format&fit=crop",
         readTime: "8 min",
-        date: "2025-01-19",
+        date: "2025-01-14",
         featured: true
     },
     {
@@ -38,7 +86,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1575608670177-33d30b91e133?q=80&w=2012&auto=format&fit=crop",
         readTime: "7 min",
-        date: "2025-01-18"
+        date: "2025-01-13"
     },
     {
         slug: "jeddah-al-balad-art",
@@ -47,7 +95,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1552554740-974a62174d81?q=80&w=2059&auto=format&fit=crop",
         readTime: "6 min",
-        date: "2025-01-17"
+        date: "2025-01-12"
     },
     {
         slug: "edge-of-the-world-adventure",
@@ -56,18 +104,18 @@ export const blogPosts: BlogPost[] = [
         category: "Travel Tips",
         image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=2011&auto=format&fit=crop",
         readTime: "5 min",
-        date: "2025-01-16"
+        date: "2025-01-11"
     },
 
-    // DESTINATIONS (10)
+    // DESTINATIONS (Legacy)
     {
         slug: "ultimate-dubai-guide-halal-travelers",
         title: "Ultimate Dubai Guide for Halal Travelers",
         excerpt: "Discover the best halal restaurants, prayer facilities, and luxury experiences in the City of Gold.",
-        category: "Halal Travel",
+        category: "Destinations",
         image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070&auto=format&fit=crop",
         readTime: "8 min",
-        date: "2025-01-15",
+        date: "2025-01-10",
         featured: true
     },
     {
@@ -77,7 +125,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=2094&auto=format&fit=crop",
         readTime: "10 min",
-        date: "2025-01-14"
+        date: "2025-01-09"
     },
     {
         slug: "hidden-gems-of-bali",
@@ -86,7 +134,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2038&auto=format&fit=crop",
         readTime: "7 min",
-        date: "2025-01-13"
+        date: "2025-01-08"
     },
     {
         slug: "paris-beyond-eiffel-tower",
@@ -95,7 +143,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop",
         readTime: "9 min",
-        date: "2025-01-12"
+        date: "2025-01-07"
     },
     {
         slug: "morocco-marrakech-to-sahara",
@@ -104,8 +152,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?q=80&w=2067&auto=format&fit=crop",
         readTime: "11 min",
-        date: "2025-01-11",
-        featured: true
+        date: "2025-01-06"
     },
     {
         slug: "maldives-budget-guide",
@@ -114,7 +161,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?q=80&w=2065&auto=format&fit=crop",
         readTime: "6 min",
-        date: "2025-01-10"
+        date: "2025-01-05"
     },
     {
         slug: "istanbul-east-meets-west",
@@ -123,16 +170,16 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?q=80&w=2071&auto=format&fit=crop",
         readTime: "8 min",
-        date: "2025-01-09"
+        date: "2025-01-04"
     },
     {
         slug: "singapore-food-tour-guide",
         title: "Singapore Food Tour: Hawker Centers to Michelin Stars",
         excerpt: "From $3 chicken rice to $300 tasting menus—the ultimate food lover's guide.",
-        category: "Destinations",
+        category: "Food & Dining",
         image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=2052&auto=format&fit=crop",
         readTime: "7 min",
-        date: "2025-01-08"
+        date: "2025-01-03"
     },
     {
         slug: "swiss-alps-adventure-guide",
@@ -141,7 +188,7 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=2070&auto=format&fit=crop",
         readTime: "9 min",
-        date: "2025-01-07"
+        date: "2025-01-02"
     },
     {
         slug: "santorini-complete-guide",
@@ -150,18 +197,18 @@ export const blogPosts: BlogPost[] = [
         category: "Destinations",
         image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?q=80&w=2069&auto=format&fit=crop",
         readTime: "8 min",
-        date: "2025-01-06"
+        date: "2025-01-01"
     },
 
-    // TRAVEL TIPS (10)
+    // TRAVEL TIPS
     {
         slug: "find-halal-food-anywhere",
         title: "How to Find Halal Food Anywhere in the World",
         excerpt: "Apps, phrases, and strategies for Muslim travelers to eat confidently abroad.",
-        category: "Halal Travel",
+        category: "Food & Dining",
         image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop",
         readTime: "5 min",
-        date: "2025-01-05",
+        date: "2024-12-31",
         featured: true
     },
     {

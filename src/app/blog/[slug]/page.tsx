@@ -32,6 +32,7 @@ function generateArticleContent(post: BlogPost): string[] {
         "Travel Tips": `${post.excerpt} Whether you're a seasoned traveler or just getting started, these insights will transform how you approach your next journey.`,
         "Halal Travel": `Traveling as a Muslim comes with unique considerations, and ${post.title.split(':')[0]} has evolved to become one of the most welcoming destinations for halal-conscious travelers. Here's your complete guide.`,
         "Luxury & Lifestyle": `For those who appreciate the finer things in travel, ${post.title.split(':')[0]} represents the pinnacle of sophisticated exploration. Here's how to experience it in style.`,
+        "Food & Dining": `The best way to understand a culture is through its food. In ${post.title.split(':')[0]}, the culinary scene is vibrant, diverse, and absolutely delicious. Get your appetite ready.`,
     }
 
     return [

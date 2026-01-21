@@ -11,7 +11,7 @@ export const metadata = {
 export default function BlogPage() {
     const featuredPosts = blogPosts.filter(post => post.featured)
     const regularPosts = blogPosts.filter(post => !post.featured)
-    const categories = ["All", "Destinations", "Travel Tips", "Halal Travel", "Luxury & Lifestyle"]
+    const categories = ["All", "Destinations", "Travel Tips", "Luxury & Lifestyle", "Food & Dining"]
 
     return (
         <main className="min-h-screen bg-black">
