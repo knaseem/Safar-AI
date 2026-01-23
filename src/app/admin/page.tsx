@@ -4,10 +4,15 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, Calendar, Users, CheckCircle, Clock, XCircle, Sparkles } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
+import { format, subDays } from "date-fns"
 import { PassportCard } from "@/components/features/passport-card"
+import {
+    AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell
+} from 'recharts'
+import { TrendingUp, Activity, PieChart as PieChartIcon } from "lucide-react"
 
 // Define interface matching Database Schema
 interface AdminBooking {
@@ -93,26 +98,73 @@ function BookingCard({ booking, onClick }: { booking: AdminBooking, onClick: () 
     )
 }
 
+const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
+
 export default function AdminDashboard() {
     const [bookings, setBookings] = useState<AdminBooking[]>([])
+    const [stats, setStats] = useState<any>({ revenue: [], archetypes: [] })
     const [loading, setLoading] = useState(true)
     const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null)
 
     useEffect(() => {
-        fetchBookings()
+        fetchData()
     }, [])
 
-    const fetchBookings = async () => {
+    const fetchData = async () => {
         const supabase = createClient()
-        const { data, error } = await supabase
+
+        // Fetch Bookings
+        const { data: bookingsData } = await supabase
             .from('booking_requests')
             .select('*')
             .order('created_at', { ascending: false })
 
-        if (!error && data) {
-            setBookings(data as AdminBooking[])
+        // Fetch Profiles for Analytics
+        const { data: profilesData } = await supabase
+            .from('travel_profiles')
+            .select('archetype')
+
+        if (bookingsData) {
+            setBookings(bookingsData as AdminBooking[])
+            processAnalytics(bookingsData, profilesData || [])
         }
         setLoading(false)
+    }
+
+    const processAnalytics = (bookings: any[], profiles: any[]) => {
+        // 1. Revenue Over Time (Mocked based on booking dates for visual)
+        const revenueMap: Record<string, number> = {}
+        // Initialize last 7 days
+        for (let i = 6; i >= 0; i--) {
+            revenueMap[format(subDays(new Date(), i), 'MMM d')] = 0
+        }
+
+        bookings.forEach(b => {
+            const date = format(new Date(b.created_at), 'MMM d')
+            if (revenueMap[date] !== undefined) {
+                revenueMap[date] += b.estimated_price
+            }
+        })
+
+        const revenueData = Object.keys(revenueMap).map(key => ({
+            name: key,
+            value: revenueMap[key]
+        }))
+
+        // 2. Archetype Distribution
+        const archetypeCounts: Record<string, number> = {}
+        profiles.forEach(p => {
+            const type = p.archetype || 'Undiscovered'
+            archetypeCounts[type] = (archetypeCounts[type] || 0) + 1
+        })
+
+        const archetypeData = Object.keys(archetypeCounts).map((name, index) => ({
+            name,
+            value: archetypeCounts[name],
+            color: COLORS[index % COLORS.length]
+        })).sort((a, b) => b.value - a.value).slice(0, 5)
+
+        setStats({ revenue: revenueData, archetypes: archetypeData })
     }
 
     const getStats = () => {
@@ -154,6 +206,118 @@ export default function AdminDashboard() {
                     </Card>
                 </div>
             </header>
+
+            {/* Analytics Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* Revenue Chart */}
+                <Card className="bg-neutral-900 border-white/10 lg:col-span-2">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-white/70 flex items-center gap-2">
+                            <TrendingUp className="size-4 text-emerald-500" /> Revenue Projection (7 Days)
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={stats.revenue}>
+                                <defs>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis dataKey="name" stroke="#555" fontSize={12} tickLine={false} axisLine={false} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '8px' }}
+                                    itemStyle={{ color: '#fff' }}
+                                    formatter={(value: any) => [`$${value.toLocaleString()}`, 'Value']}
+                                />
+                                <Area type="monotone" dataKey="value" stroke="#10B981" fillOpacity={1} fill="url(#colorRevenue)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+
+                {/* Archetype Distribution */}
+                <Card className="bg-neutral-900 border-white/10">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-white/70 flex items-center gap-2">
+                            <PieChartIcon className="size-4 text-blue-500" /> User Travel DNA
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[200px] relative">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={stats.archetypes}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {stats.archetypes.map((entry: any, index: number) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '8px' }}
+                                    itemStyle={{ color: '#fff' }}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-white">{stats.archetypes.reduce((a: any, b: any) => a + b.value, 0)}</p>
+                                <p className="text-[10px] text-white/40 uppercase">Users</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Live Activity Feed */}
+            <Card className="bg-neutral-900 border-white/10 mb-8">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-white/70 flex items-center gap-2">
+                        <Activity className="size-4 text-purple-500" /> Live Activity Feed
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {bookings.slice(0, 3).map((booking) => (
+                            <div key={booking.id} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500">
+                                        <Sparkles className="size-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-white font-medium">New Booking Request</p>
+                                        <p className="text-xs text-white/40">
+                                            {booking.contact_first_name} requested a trip to {booking.destination}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className="text-xs text-white/30 font-mono">
+                                    {format(new Date(booking.created_at), 'MMM d, h:mm a')}
+                                </span>
+                            </div>
+                        ))}
+                        <div className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-full bg-blue-500/10 text-blue-500">
+                                    <Users className="size-4" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-white font-medium">New User Registration</p>
+                                    <p className="text-xs text-white/40">Verified via Email</p>
+                                </div>
+                            </div>
+                            <span className="text-xs text-white/30 font-mono">Just now</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Kanban Board */}
             <div className="flex-1 overflow-x-auto">
@@ -270,8 +434,8 @@ function BookingDetailModal({ booking, onClose }: { booking: AdminBooking, onClo
                         <div>
                             <div className="flex items-center gap-2 mb-1">
                                 <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${booking.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' :
-                                        booking.status === 'booked' ? 'bg-emerald-500/10 text-emerald-500' :
-                                            'bg-blue-500/10 text-blue-500'
+                                    booking.status === 'booked' ? 'bg-emerald-500/10 text-emerald-500' :
+                                        'bg-blue-500/10 text-blue-500'
                                     }`}>
                                     {booking.status}
                                 </span>
