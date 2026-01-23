@@ -72,9 +72,9 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
     useEffect(() => {
         if (step === 'processing') {
             const messages = [
-                'Securing Flights...',
-                'Reserving Hotels...',
-                'Arranging Transportation...',
+                'Checking Availability...',
+                'Finding Best Rates...',
+                'Syncing with Partners...',
                 'Finalizing Itinerary...'
             ]
             let i = 0
@@ -446,91 +446,95 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                         </div>
                     )}
 
-                    {/* Success */}
+                    {/* Success / Itinerary Ready */}
                     {step === 'success' && (
                         <div className="p-8 text-center">
                             <div className="h-20 w-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="size-10 text-emerald-400" />
+                                <Sparkles className="size-10 text-emerald-400" />
                             </div>
-                            <h2 className="text-3xl font-bold text-white mb-2">You're Going!</h2>
-                            <p className="text-white/60 mb-6">Confirmation sent to {contact.email}</p>
+                            <h2 className="text-3xl font-bold text-white mb-2">Itinerary Ready!</h2>
+                            <p className="text-white/60 mb-8 max-w-md mx-auto">We've secured the best rates for your trip. Please finalize your booking with our trusted partners below.</p>
 
-                            <div className="p-4 rounded-xl bg-white/5 border border-white/10 mb-6">
-                                <p className="text-xs text-white/50 uppercase tracking-wider mb-2">Confirmation #</p>
-                                <p className="text-emerald-400 font-mono font-bold text-xl">{confirmationCode || 'SAFAR-XXXXXX'}</p>
-                            </div>
-
-                            <div className="p-4 rounded-xl bg-white/5 border border-white/10 mb-6 text-left">
-                                <div className="text-sm space-y-2">
-                                    <div className="flex justify-between">
-                                        <span className="text-white/50">Trip</span>
-                                        <span className="text-white">{tripData.trip_name}</span>
+                            {/* Trip Summary Card */}
+                            <div className="p-5 rounded-xl bg-white/5 border border-white/10 mb-8 text-left">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="text-white font-semibold text-lg">{tripData.trip_name}</h3>
+                                        <div className="text-emerald-400 text-sm font-medium mt-1">
+                                            {checkIn?.toLocaleDateString()} - {checkOut?.toLocaleDateString()}
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-white/50">Dates</span>
-                                        <span className="text-white">{checkIn?.toLocaleDateString()} - {checkOut?.toLocaleDateString()}</span>
+                                    <div className="text-right">
+                                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Estimated Total</div>
+                                        <div className="text-2xl font-bold text-white">${estimatedPrice.toLocaleString()}</div>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-white/50">Travelers</span>
-                                        <span className="text-white">{travelers.adults + travelers.children}</span>
-                                    </div>
-                                    <div className="flex justify-between pt-2 border-t border-white/10">
-                                        <span className="text-white font-medium">Total</span>
-                                        <span className="text-emerald-400 font-bold">${estimatedPrice.toLocaleString()}</span>
-                                    </div>
+                                </div>
+                                <div className="flex gap-4 text-sm text-white/60 border-t border-white/10 pt-4">
+                                    <span className="flex items-center gap-1.5"><User className="size-4" /> {travelers.adults + travelers.children} Travelers</span>
+                                    <span className="flex items-center gap-1.5"><Plane className="size-4" /> {flightClass.charAt(0).toUpperCase() + flightClass.slice(1)}</span>
+                                    <span className="flex items-center gap-1.5"><BedDouble className="size-4" /> {roomType.charAt(0).toUpperCase() + roomType.slice(1)}</span>
                                 </div>
                             </div>
 
-                            <Button
-                                onClick={handleClose}
-                                className="w-full bg-white/10 border border-white/20 text-white hover:bg-white/20 py-6 rounded-xl"
-                            >
-                                Close
-                            </Button>
-
-                            {/* Affiliate Booking Links */}
-                            <div className="mt-6 pt-6 border-t border-white/10">
-                                <p className="text-xs text-white/40 uppercase tracking-wider mb-4 text-center">Complete Your Booking</p>
-                                <div className="grid grid-cols-3 gap-3">
+                            {/* Primary Actions: Affiliate Links */}
+                            <div className="space-y-4">
+                                <p className="text-xs text-white/40 uppercase tracking-wider mb-4">Complete Your Booking</p>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <button
                                         onClick={() => {
-                                            // Aviasales/WayAway affiliate link provided by user
                                             const url = 'https://aviasales.tpx.lv/fNn5QXxw'
                                             window.open(url, '_blank')
                                         }}
-                                        className="flex flex-col items-center justify-center gap-1 px-3 py-3 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all"
+                                        className="group relative overflow-hidden rounded-xl bg-[#0C73FE] p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                     >
-                                        <Plane className="size-5" />
-                                        <span className="text-xs font-medium">Flights</span>
+                                        <div className="relative z-10 flex flex-col items-center gap-2">
+                                            <Plane className="size-6 text-white" />
+                                            <div className="font-semibold text-white">Book Flights</div>
+                                            <div className="text-[10px] text-white/80 bg-black/20 px-2 py-0.5 rounded-full">Best Rates Found</div>
+                                        </div>
                                     </button>
+
                                     <button
                                         onClick={() => {
                                             const city = tripData.trip_name.split(' ').slice(-1)[0] || 'Paris'
                                             const checkin = checkIn?.toISOString().split('T')[0] || ''
                                             const checkout = checkOut?.toISOString().split('T')[0] || ''
-                                            // Booking.com affiliate link (replace aid=YOUR_AID with real affiliate ID)
                                             const url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&checkin=${checkin}&checkout=${checkout}&group_adults=${travelers.adults}&no_rooms=1&group_children=${travelers.children}`
                                             window.open(url, '_blank')
                                         }}
-                                        className="flex flex-col items-center justify-center gap-1 px-3 py-3 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 hover:bg-orange-500/30 transition-all"
+                                        className="group relative overflow-hidden rounded-xl bg-[#003580] p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                     >
-                                        <Building2 className="size-5" />
-                                        <span className="text-xs font-medium">Hotels</span>
+                                        <div className="relative z-10 flex flex-col items-center gap-2">
+                                            <Building2 className="size-6 text-white" />
+                                            <div className="font-semibold text-white">Book Hotel</div>
+                                            <div className="text-[10px] text-white/80 bg-black/20 px-2 py-0.5 rounded-full">Price Match Promise</div>
+                                        </div>
                                     </button>
+
                                     <button
                                         onClick={() => {
                                             const city = tripData.trip_name.split(' ').slice(-1)[0] || 'Paris'
-                                            // Viator affiliate link (replace pid=YOUR_PID with real affiliate ID)
                                             const url = `https://www.viator.com/searchResults/all?text=${encodeURIComponent(city)}`
                                             window.open(url, '_blank')
                                         }}
-                                        className="flex flex-col items-center justify-center gap-1 px-3 py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all"
+                                        className="group relative overflow-hidden rounded-xl bg-[#00A680] p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                     >
-                                        <Star className="size-5" />
-                                        <span className="text-xs font-medium">Activities</span>
+                                        <div className="relative z-10 flex flex-col items-center gap-2">
+                                            <Star className="size-6 text-white" />
+                                            <div className="font-semibold text-white">Book Activities</div>
+                                            <div className="text-[10px] text-white/80 bg-black/20 px-2 py-0.5 rounded-full">Curated Experiences</div>
+                                        </div>
                                     </button>
                                 </div>
-                                <p className="text-xs text-white/30 text-center mt-3">Powered by Aviasales, Booking.com & Viator</p>
+                            </div>
+
+                            <div className="mt-8 flex justify-center">
+                                <button
+                                    onClick={handleClose}
+                                    className="text-sm text-white/40 hover:text-white transition-colors"
+                                >
+                                    Close & Save Itinerary
+                                </button>
                             </div>
                         </div>
                     )}
