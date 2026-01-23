@@ -95,6 +95,15 @@ export default function ProfilePage() {
                                         )}
                                     </div>
 
+                                    {user?.email === 'knaseem22@gmail.com' && (
+                                        <Button
+                                            onClick={() => router.push('/admin')}
+                                            className="w-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/50"
+                                        >
+                                            <Sparkles className="size-4 mr-2" />
+                                            Command Center
+                                        </Button>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
@@ -228,7 +237,7 @@ export default function ProfilePage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </main>
+        </main >
     )
 }
 
