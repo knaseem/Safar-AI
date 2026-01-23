@@ -101,12 +101,12 @@ export function Navbar() {
                                         >
                                             <div className="p-2">
                                                 <Link
-                                                    href="/dashboard"
+                                                    href="/profile"
                                                     onClick={() => setIsUserMenuOpen(false)}
                                                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition-colors"
                                                 >
                                                     <Map className="size-4" />
-                                                    <span className="text-sm font-medium">My Trips</span>
+                                                    <span className="text-sm font-medium">My Profile</span>
                                                 </Link>
                                                 <button
                                                     onClick={handleSignOut}

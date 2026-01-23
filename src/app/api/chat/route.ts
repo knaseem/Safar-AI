@@ -9,16 +9,15 @@ export async function POST(req: Request) {
     const { prompt, isHalal } = await req.json();
     const supabase = await createClient();
 
-    // 1. Get the user's "Travel DNA"
+    // 1. Get the user's "Travel DNA" (or default)
     const { data: profiles, error } = await supabase
       .from("travel_profiles")
       .select("*")
-      .order("created_at", { ascending: false })
-      .limit(1);
+      .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+      .single();
 
-    if (error) throw error;
-
-    const profile = profiles?.[0] || { archetype: "Explorer", traits: {} };
+    // Graceful fallback if no profile exists
+    const profile = profiles || { archetype: "Explorer", traits: {} };
 
     // 2. Construct the Prompt
     const systemPrompt = `

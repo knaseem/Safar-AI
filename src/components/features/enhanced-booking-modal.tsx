@@ -528,13 +528,22 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                                 </div>
                             </div>
 
-                            <div className="mt-8 flex justify-center">
+                            <div className="mt-8 flex justify-center gap-4">
                                 <button
                                     onClick={handleClose}
                                     className="text-sm text-white/40 hover:text-white transition-colors"
                                 >
-                                    Close & Save Itinerary
+                                    Close
                                 </button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        window.location.href = '/profile'
+                                    }}
+                                    className="border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10"
+                                >
+                                    View in Profile
+                                </Button>
                             </div>
                         </div>
                     )}
