@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from "framer-motion"
 import { CheckCircle, ArrowRight, Heart, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { CinemaMap } from "./cinema-map"
-import { BookingModal } from "./booking-modal"
+import { EnhancedBookingModal } from "./enhanced-booking-modal"
 import { AuthModal } from "./auth-modal"
+import { TripPdfDocument } from "./trip-pdf"
+import { pdf } from "@react-pdf/renderer"
+import { saveAs } from "file-saver"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 
@@ -37,8 +40,37 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [isSaved, setIsSaved] = useState(false)
+    const [activeDayIndex, setActiveDayIndex] = useState(0)
+    const [isMounted, setIsMounted] = useState(false)
+    const dayRefs = useRef<(HTMLDivElement | null)[]>([])
     const { user } = useAuth()
     const locations = data.days.map(d => d.coordinates)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const index = Number(entry.target.getAttribute('data-index'))
+                        if (!isNaN(index)) {
+                            setActiveDayIndex(index)
+                        }
+                    }
+                })
+            },
+            { rootMargin: '-40% 0px -40% 0px' } // Trigger when element is in middle of viewport
+        )
+
+        dayRefs.current.forEach((el) => {
+            if (el) observer.observe(el)
+        })
+
+        return () => observer.disconnect()
+    }, [data])
 
     const handleSaveTrip = async () => {
         if (!user) {
@@ -86,22 +118,22 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
             <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-4xl mx-auto bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
+                className="w-full max-w-4xl mx-auto bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[85vh] md:h-[90vh]"
             >
-                {/* Header / Cinema Mode */}
-                <div className="relative h-80 md:h-[500px] bg-neutral-900 group overflow-hidden">
-                    <CinemaMap locations={locations} />
+                {/* Top Section: Fixed Map */}
+                <div className="relative h-[55%] shrink-0 bg-neutral-900 group overflow-hidden border-b border-white/10">
+                    <CinemaMap locations={locations} activeIndex={activeDayIndex} />
 
                     {/* Overlay Title */}
-                    <div className="absolute bottom-6 left-8 pointer-events-none">
+                    <div className="absolute bottom-6 left-8 right-20 pointer-events-none">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium uppercase tracking-wider border border-emerald-500/20 mb-3 backdrop-blur-md">
                             <CheckCircle className="size-3" />
                             AI Curated
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-1 drop-shadow-lg">{data.trip_name}</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-1 drop-shadow-lg max-w-full">{data.trip_name}</h2>
                     </div>
 
-                    {/* Save Button - positioned top-left to avoid cinema map controls */}
+                    {/* Save Button */}
                     <button
                         onClick={handleSaveTrip}
                         disabled={isSaving || isSaved}
@@ -119,61 +151,78 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
                             {isSaved ? "Saved" : "Save Trip"}
                         </span>
                     </button>
-                </div>
 
-                {/* Timeline */}
-                <div className="p-8 space-y-12">
-                    {data.days.map((day, index) => (
-                        <motion.div
-                            key={day.day}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="relative pl-8 border-l border-white/10 last:border-0"
+                    {/* PDF Download Button - Client Only */}
+                    {isMounted && (
+                        <button
+                            onClick={async () => {
+                                const blob = await pdf(<TripPdfDocument data={data} />).toBlob()
+                                const url = URL.createObjectURL(blob)
+                                // Open in new tab - user can save with Cmd+S
+                                window.open(url, '_blank')
+                            }}
+                            className="absolute top-4 right-4 z-20 flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border bg-black/40 border-white/20 text-white hover:bg-black/60 hover:border-white/30 transition-all duration-300"
                         >
-                            {/* Day Marker */}
-                            <div className="absolute -left-3 top-0 h-6 w-6 rounded-full bg-emerald-500 border-4 border-black flex items-center justify-center">
-                                <div className="h-1.5 w-1.5 bg-white rounded-full" />
-                            </div>
-
-                            <div className="mb-6">
-                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                                    Day {day.day}
-                                    <span className="text-white/40 font-normal text-base">— {day.theme}</span>
-                                </h3>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* Morning */}
-                                <ActivityCard time="Morning" title={day.morning} />
-                                {/* Afternoon */}
-                                <ActivityCard time="Afternoon" title={day.afternoon} />
-                                {/* Evening */}
-                                <ActivityCard time="Evening" title={day.evening} />
-                            </div>
-
-                            <div className="mt-4 flex items-center gap-2 text-white/40 text-sm bg-white/5 p-3 rounded-lg border border-white/5">
-                                <MoonIcon className="size-4" />
-                                <span className="uppercase tracking-widest text-[10px]">Stay:</span>
-                                <span className="text-white/80">{day.stay}</span>
-                            </div>
-                        </motion.div>
-                    ))}
+                            <ArrowRight className="size-4 rotate-90" />
+                            <span className="text-sm font-medium">Download PDF</span>
+                        </button>
+                    )}
                 </div>
 
-                <div className="p-8 border-t border-white/10 flex justify-between items-center bg-black/20">
-                    <button onClick={onReset} className="text-white/40 hover:text-white text-sm">
-                        ← Plan Another Trip
-                    </button>
-                    <Button size="lg" className="bg-white text-black hover:bg-white/90" onClick={() => setIsBookingOpen(true)}>
-                        Proprietary Booking <ArrowRight className="size-4 ml-2" />
-                    </Button>
+                {/* Bottom Section: Scrollable Timeline */}
+                <div className="flex-1 overflow-y-auto relative bg-transparent scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                    <div className="flex-1 p-8 space-y-12">
+                        {data.days.map((day, index) => (
+                            <motion.div
+                                key={day.day}
+                                ref={(el: HTMLDivElement | null) => { dayRefs.current[index] = el }}
+                                data-index={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className={`relative pl-8 border-l last:border-0 transition-colors duration-500 ${activeDayIndex === index ? "border-emerald-500/50" : "border-white/10"}`}
+                            >
+                                {/* Day Marker */}
+                                <div className="absolute -left-3 top-0 h-6 w-6 rounded-full bg-emerald-500 border-4 border-black flex items-center justify-center">
+                                    <div className="h-1.5 w-1.5 bg-white rounded-full" />
+                                </div>
+
+                                <div className="mb-6">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                        Day {day.day}
+                                        <span className="text-white/40 font-normal text-base">— {day.theme}</span>
+                                    </h3>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <ActivityCard time="Morning" title={day.morning} />
+                                    <ActivityCard time="Afternoon" title={day.afternoon} />
+                                    <ActivityCard time="Evening" title={day.evening} />
+                                </div>
+
+                                <div className="mt-4 flex items-center gap-2 text-white/40 text-sm bg-white/5 p-3 rounded-lg border border-white/5">
+                                    <MoonIcon className="size-4" />
+                                    <span className="uppercase tracking-widest text-[10px]">Stay:</span>
+                                    <span className="text-white/80">{day.stay}</span>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <div className="p-8 border-t border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md sticky bottom-0 z-10">
+                        <button onClick={onReset} className="text-white/40 hover:text-white text-sm">
+                            ← Back
+                        </button>
+                        <Button size="lg" className="bg-white text-black hover:bg-white/90" onClick={() => setIsBookingOpen(true)}>
+                            Proprietary Booking <ArrowRight className="size-4 ml-2" />
+                        </Button>
+                    </div>
                 </div>
             </motion.div>
 
-            <BookingModal
-                tripName={data.trip_name}
-                days={data.days.length}
+            <EnhancedBookingModal
+                tripData={data}
+                isHalal={isHalal}
                 isOpen={isBookingOpen}
                 onClose={() => setIsBookingOpen(false)}
             />
@@ -213,3 +262,4 @@ function MoonIcon({ className }: { className?: string }) {
         </svg>
     )
 }
+

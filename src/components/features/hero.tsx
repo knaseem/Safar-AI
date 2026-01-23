@@ -148,6 +148,7 @@ export function Hero() {
                                     disabled={loading}
                                     placeholder={placeholderSuggestions[placeholderIndex]}
                                     className="flex-1 bg-transparent border-0 outline-none text-white placeholder:text-white/50 text-lg py-3"
+                                    suppressHydrationWarning
                                 />
                                 <Button
                                     size="lg"

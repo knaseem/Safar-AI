@@ -44,14 +44,27 @@ interface Coordinates {
 
 interface CinemaMapProps {
     locations: Coordinates[]
+    activeIndex?: number
 }
 
-export function CinemaMap({ locations }: CinemaMapProps) {
+export function CinemaMap({ locations, activeIndex = 0 }: CinemaMapProps) {
     const mapContainer = useRef<HTMLDivElement>(null)
     const map = useRef<mapboxgl.Map | null>(null)
     const [isPlaying, setIsPlaying] = useState(true) // Auto-play on load
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isSatellite, setIsSatellite] = useState(false)
+    const isPlayingRef = useRef(isPlaying)
+
+    // Refs for animation and sync
+    const airplaneMarkerRef = useRef<mapboxgl.Marker | null>(null)
+    const pathCoordinatesRef = useRef<number[][]>([])
+    const dayPathIndicesRef = useRef<number[]>([]) // Stores the index in allCoordinates for each day
+    const progressRef = useRef(0)
+
+    // Sync ref with state
+    useEffect(() => {
+        isPlayingRef.current = isPlaying
+    }, [isPlaying])
 
     // Initialize Map
     useEffect(() => {
@@ -75,13 +88,217 @@ export function CinemaMap({ locations }: CinemaMapProps) {
         // Add navigation controls (zoom, compass)
         map.current.addControl(new mapboxgl.NavigationControl({ showCompass: true, showZoom: true }), 'bottom-right')
 
-        // Add pulsing markers
+        // Add flight path line connecting all days
+        map.current.on('load', () => {
+            if (!map.current) return
+
+            // Gradient colors for each leg (vibrant travel colors)
+            // Gradient colors for each leg (consistent Neon Cyan/Emerald theme)
+            const legColors = [
+                '#2dd4bf', // teal-400
+                '#06b6d4', // cyan-500
+                '#10b981', // emerald-500
+                '#2dd4bf', // teal-400
+                '#06b6d4', // cyan-500
+                '#10b981', // emerald-500
+            ]
+
+            // Generate curved arc coordinates with MORE PRONOUNCED curvature
+            const generateArc = (start: number[], end: number[], numPoints = 60): number[][] => {
+                const points: number[][] = []
+                for (let i = 0; i <= numPoints; i++) {
+                    const t = i / numPoints
+                    const lng = start[0] + (end[0] - start[0]) * t
+                    const lat = start[1] + (end[1] - start[1]) * t
+
+                    // INCREASED curvature - more pronounced arc
+                    const distance = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2))
+                    const arcHeight = Math.min(distance * 0.25, 1.2) // Increased from 0.15 to 0.25
+                    const arc = Math.sin(t * Math.PI) * arcHeight
+
+                    points.push([lng, lat + arc])
+                }
+                return points
+            }
+
+            // Store all coordinates for airplane animation
+            let allCoordinates: number[][] = []
+
+            // Create separate layers for each leg with different colors
+            for (let i = 0; i < locations.length - 1; i++) {
+                // Store the starting index for this day's leg
+                dayPathIndicesRef.current[i] = allCoordinates.length
+
+                const start = [locations[i].lng, locations[i].lat]
+                const end = [locations[i + 1].lng, locations[i + 1].lat]
+                const arcPoints = generateArc(start, end)
+                allCoordinates = allCoordinates.concat(arcPoints)
+                const color = legColors[i % legColors.length]
+
+                // Add source for this leg
+                map.current.addSource(`flight-leg-${i}`, {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: arcPoints
+                        }
+                    }
+                })
+
+                // Outer glow (THICKER)
+                map.current.addLayer({
+                    id: `flight-leg-${i}-glow-outer`,
+                    type: 'line',
+                    source: `flight-leg-${i}`,
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: {
+                        'line-color': color,
+                        'line-width': 20, // Increased from 16
+                        'line-opacity': 0.2,
+                        'line-blur': 8
+                    }
+                })
+
+                // Middle glow (THICKER)
+                map.current.addLayer({
+                    id: `flight-leg-${i}-glow-middle`,
+                    type: 'line',
+                    source: `flight-leg-${i}`,
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: {
+                        'line-color': color,
+                        'line-width': 10, // Increased from 8
+                        'line-opacity': 0.5,
+                        'line-blur': 3
+                    }
+                })
+
+                // Main solid line (THICKER)
+                map.current.addLayer({
+                    id: `flight-leg-${i}-solid`,
+                    type: 'line',
+                    source: `flight-leg-${i}`,
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: {
+                        'line-color': color,
+                        'line-width': 4, // Increased from 3
+                        'line-opacity': 1
+                    }
+                })
+
+                // White center line for contrast
+                map.current.addLayer({
+                    id: `flight-leg-${i}-center`,
+                    type: 'line',
+                    source: `flight-leg-${i}`,
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: {
+                        'line-color': '#ffffff',
+                        'line-width': 1.5,
+                        'line-opacity': 0.6
+                    }
+                })
+            }
+
+            // Set the index for the final destination
+            if (allCoordinates.length > 0) {
+                dayPathIndicesRef.current[locations.length - 1] = allCoordinates.length - 1
+            }
+
+            // Only create airplane if we have coordinates
+            if (allCoordinates.length > 0) {
+                // Store path data for scroll sync
+                pathCoordinatesRef.current = allCoordinates
+
+                // Create airplane marker with a rotatable inner element
+                const firstLoc = locations[0]
+                const airplaneEl = document.createElement('div')
+                airplaneEl.innerHTML = `
+                    <div class="plane-inner" style="width: 24px; height: 24px; background: #f97316; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 15px #f97316, 0 0 30px #f97316; display: flex; align-items: center; justify-content: center;">
+                    </div>
+                `
+
+                // Create and add marker at first location
+                const airplaneMarker = new mapboxgl.Marker({
+                    element: airplaneEl,
+                    anchor: 'center'
+                })
+                    .setLngLat([firstLoc.lng, firstLoc.lat])
+                    .addTo(map.current!)
+
+                airplaneMarkerRef.current = airplaneMarker
+
+                // Get reference to inner rotatable element
+                const planeInner = airplaneEl.querySelector('.plane-inner') as HTMLElement
+
+                const totalPoints = allCoordinates.length
+                // Fit bounds to show all locations
+                const bounds = new mapboxgl.LngLatBounds()
+                locations.forEach(loc => bounds.extend([loc.lng, loc.lat]))
+                map.current.fitBounds(bounds, {
+                    padding: { top: 120, bottom: 120, left: 120, right: 120 }, // Generous padding
+                    pitch: 40, // Reduced pitch for better overview
+                    duration: 2000 // Smooth zoom out
+                })
+
+                const speed = 0.02 // Faster speed for visible movement
+
+                const animateAirplane = () => {
+                    if (!map.current) return
+
+                    if (!isPlayingRef.current) {
+                        requestAnimationFrame(animateAirplane)
+                        return
+                    }
+
+                    // Check if we've reached the end
+                    if (progressRef.current >= totalPoints - 1) {
+                        // Ensure we land exactly at the last point
+                        const lastCoord = pathCoordinatesRef.current[totalPoints - 1]
+                        airplaneMarker.setLngLat([lastCoord[0], lastCoord[1]])
+                        setIsPlaying(false) // Stop playing state
+                        return // Stop animation loop
+                    }
+
+                    progressRef.current += speed
+
+                    const idx = Math.floor(progressRef.current)
+                    // Update current Day index for UI
+                    const currentDayIndex = Math.floor((idx / totalPoints) * locations.length)
+                    setCurrentIndex(Math.min(currentDayIndex, locations.length - 1))
+
+                    const nextIdx = Math.min(idx + 1, totalPoints - 1)
+                    const t = progressRef.current - idx
+
+                    const coord = pathCoordinatesRef.current[idx]
+                    const nextCoord = pathCoordinatesRef.current[nextIdx]
+
+                    if (coord && nextCoord) {
+                        const lng = coord[0] + (nextCoord[0] - coord[0]) * t
+                        const lat = coord[1] + (nextCoord[1] - coord[1]) * t
+
+                        airplaneMarker.setLngLat([lng, lat])
+                    }
+
+                    requestAnimationFrame(animateAirplane)
+                }
+
+                animateAirplane()
+            }
+        })
+
+        // Add numbered day markers
         locations.forEach((loc, i) => {
             const el = document.createElement('div')
             el.innerHTML = `
                 <div class="relative">
-                    <div class="w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-lg z-10 relative"></div>
-                    <div class="absolute inset-0 w-4 h-4 bg-emerald-500 rounded-full animate-ping opacity-75"></div>
+                    <div class="w-7 h-7 bg-emerald-500 rounded-full border-2 border-white shadow-lg z-10 relative flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">${i + 1}</span>
+                    </div>
+                    <div class="absolute inset-0 w-7 h-7 bg-emerald-500 rounded-full animate-ping opacity-50"></div>
                 </div>
             `
             el.style.cssText = 'cursor: pointer;'
@@ -93,53 +310,38 @@ export function CinemaMap({ locations }: CinemaMapProps) {
 
         return () => map.current?.remove()
     }, [isSatellite])
-
-    // Enhanced Animation Logic
+    // Handle external activeIndex changes (Scroll Sync)
     useEffect(() => {
-        if (!map.current) return
+        if (!map.current || activeIndex === undefined) return
 
-        let interval: NodeJS.Timeout
+        // If external index changes, we should probably stop auto-play to let user control
+        if (activeIndex !== currentIndex) {
+            setIsPlaying(false)
+            setCurrentIndex(activeIndex)
 
-        if (isPlaying) {
-            const flyStep = () => {
-                const nextIndex = (currentIndex + 1) % locations.length
-                const loc = locations[nextIndex]
+            // Move marker to the specific day's location on the path
+            const targetIndex = dayPathIndicesRef.current[activeIndex]
+            if (targetIndex !== undefined && pathCoordinatesRef.current[targetIndex] && airplaneMarkerRef.current) {
+                // Update progress so animation continues from here if resumed
+                progressRef.current = targetIndex
+                airplaneMarkerRef.current.setLngLat(pathCoordinatesRef.current[targetIndex] as [number, number])
+            }
 
-                // Dynamic camera effects based on location index
-                const zoom = 13 + Math.sin(nextIndex) * 2 // Vary zoom 11-15
-                const pitch = 65 + Math.cos(nextIndex * 0.5) * 10 // Vary pitch 55-75
-                const bearing = nextIndex * 60 // Rotate more dramatically
-
-                map.current?.flyTo({
+            const loc = locations[activeIndex]
+            if (loc) {
+                map.current.flyTo({
                     center: [loc.lng, loc.lat],
-                    zoom,
-                    pitch,
-                    bearing,
-                    duration: 6000, // Slightly faster
-                    essential: true,
-                    curve: 1.5, // Smooth easing curve
-                })
-                setCurrentIndex(nextIndex)
-            }
-
-            // Start with a dramatic initial flight
-            if (currentIndex === 0 && locations[0]) {
-                map.current?.flyTo({
-                    center: [locations[0].lng, locations[0].lat],
-                    zoom: 14,
-                    pitch: 75,
-                    bearing: 30,
-                    duration: 3000,
+                    zoom: 14, // Closer zoom for specific day
+                    pitch: 60,
+                    bearing: activeIndex * 45, // Rotate a bit for each day
+                    duration: 2000,
+                    essential: true
                 })
             }
-
-            interval = setInterval(flyStep, 6000)
-        } else {
-            map.current.stop()
         }
+    }, [activeIndex, locations])
 
-        return () => clearInterval(interval)
-    }, [isPlaying, locations, currentIndex])
+
 
     const togglePlay = () => setIsPlaying(!isPlaying)
     const toggleStyle = () => setIsSatellite(!isSatellite)
