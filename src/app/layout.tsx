@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -34,6 +35,12 @@ export default function RootLayout({
           {children}
         </AuthProvider>
         <Toaster position="top-center" richColors />
+        {/* Travelpayouts Verification */}
+        <Script
+          id="travelpayouts-verification"
+          src="https://emrld.ltd/NDkxNzkw.js?t=491790"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
