@@ -10,6 +10,7 @@ import { BookingRequest } from "@/types/booking"
 import { Loader2, Plane, Calendar, MapPin, User as UserIcon, X, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { PassportCard } from "@/components/features/passport-card"
+import { VibeCheck } from "@/components/features/vibe-check"
 
 export default function ProfilePage() {
     const router = useRouter()
@@ -20,6 +21,7 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState<'trips' | 'bookings'>('bookings')
     const [showPassport, setShowPassport] = useState(false)
+    const [showVibeCheck, setShowVibeCheck] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,6 +43,9 @@ export default function ProfilePage() {
 
             if (profileData) {
                 setProfile(profileData)
+            } else {
+                // No profile found -> Trigger Onboarding
+                setShowVibeCheck(true)
             }
 
             // Fetch Bookings
@@ -191,7 +196,7 @@ export default function ProfilePage() {
                                                             <p className="text-xs text-white/40 uppercase">Est. Budget</p>
                                                             <p className="text-lg font-semibold text-white">${booking.estimated_price?.toLocaleString()}</p>
                                                         </div>
-                                                        <Button variant="outline" className="border-white/10 text-white hover:bg-white/10">
+                                                        <Button variant="outline" className="bg-transparent border-white/10 text-white hover:bg-white/10">
                                                             View Details
                                                         </Button>
                                                     </div>
@@ -244,10 +249,9 @@ export default function ProfilePage() {
                                                 </div>
                                                 <Button
                                                     variant="outline"
-                                                    className="w-full border-white/10 text-white hover:bg-white/10 hover:text-white group-hover:border-emerald-500/30"
+                                                    className="w-full bg-transparent border-white/10 text-white hover:bg-white/10 hover:text-white group-hover:border-emerald-500/30"
                                                     onClick={() => {
-                                                        // Future: Navigate to view
-                                                        console.log("View trip", trip)
+                                                        router.push(`/trips/${trip.id}`)
                                                     }}
                                                 >
                                                     View Itinerary
@@ -287,8 +291,16 @@ export default function ProfilePage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Vibe Check Onboarding Modal */}
+            <VibeCheck
+                isOpen={showVibeCheck}
+                onClose={() => {
+                    setShowVibeCheck(false)
+                    // Refresh data to show new profile immediately
+                    window.location.reload()
+                }}
+            />
         </main >
     )
 }
-
-

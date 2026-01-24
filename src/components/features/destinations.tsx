@@ -24,7 +24,7 @@ const ALL_DESTINATIONS = [
     },
     {
         id: 6, title: "Petra, Jordan", description: "The Rose City, carved directly into rock.",
-        image: "https://images.unsplash.com/photo-1579606869400-47e0682121e4?q=80&w=2071&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1501236570302-9061b2aaa412?q=80&w=2070&auto=format&fit=crop",
         rating: "4.8", price: "From $6,200", tags: ["History", "Desert", "Adventure"]
     },
     {
@@ -105,7 +105,7 @@ const ALL_DESTINATIONS = [
     },
     {
         id: 15, title: "Marrakech, Morocco", description: "A sensory feast of colors and spices.",
-        image: "https://images.unsplash.com/photo-1597211833715-485203388033?q=80&w=2070&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=2070&auto=format&fit=crop",
         rating: "4.6", price: "From $4,900", tags: ["Culture", "Markets", "Desert"]
     },
     {

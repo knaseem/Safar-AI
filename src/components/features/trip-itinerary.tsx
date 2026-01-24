@@ -1,18 +1,22 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { motion } from "framer-motion"
-import { CheckCircle, ArrowRight, Heart, Loader2, Sparkles } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { CheckCircle, ArrowRight, Heart, Loader2, Sparkles, Share2, Copy, Play, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { CinemaMap } from "./cinema-map"
 import { EnhancedBookingModal } from "./enhanced-booking-modal"
 import { AuthModal } from "./auth-modal"
 import { TripPdfDocument } from "./trip-pdf"
-import { AIChatDrawer } from "./ai-chat-drawer"
+import { AIChatDrawer, ConciergeButton } from "./ai-chat-drawer"
+import { SocialShareModal } from "./social-share-modal"
+import { WeatherWidget } from "./weather-widget"
 import { pdf } from "@react-pdf/renderer"
+import { AudioConcierge } from "./audio-concierge"
 import { saveAs } from "file-saver"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
+import { useRouter } from 'next/navigation'
 
 export type TripData = {
     trip_name: string
@@ -32,20 +36,26 @@ export type TripData = {
 
 interface TripItineraryProps {
     data: TripData
-    onReset: () => void
+    onReset?: () => void
     isHalal?: boolean
+    isShared?: boolean
+    tripId?: string // If present, enables sharing
 }
 
-export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryProps) {
+export function TripItinerary({ data, onReset, isHalal = false, isShared = false, tripId }: TripItineraryProps) {
     const [isBookingOpen, setIsBookingOpen] = useState(false)
     const [isChatOpen, setIsChatOpen] = useState(false)
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false)
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+    const [isPresenting, setIsPresenting] = useState(false) // New Presentation State
     const [isSaving, setIsSaving] = useState(false)
-    const [isSaved, setIsSaved] = useState(false)
+    const [isSaved, setIsSaved] = useState(!!tripId) // If ID passed, it's already saved
+    const [savedTripId, setSavedTripId] = useState<string | null>(tripId || null)
     const [activeDayIndex, setActiveDayIndex] = useState(0)
     const [isMounted, setIsMounted] = useState(false)
     const dayRefs = useRef<(HTMLDivElement | null)[]>([])
     const { user } = useAuth()
+    const router = useRouter()
     const locations = data.days.map(d => d.coordinates)
 
     useEffect(() => {
@@ -53,8 +63,19 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
     }, [])
 
     useEffect(() => {
+        if (!isPresenting) return
+
+        const interval = setInterval(() => {
+            setActiveDayIndex(prev => (prev + 1) % data.days.length)
+        }, 8000) // 8 seconds per day
+
+        return () => clearInterval(interval)
+    }, [isPresenting, data.days.length])
+
+    useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
+                if (isPresenting) return // Disable scroll observer during presentation
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         const index = Number(entry.target.getAttribute('data-index'))
@@ -72,7 +93,7 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
         })
 
         return () => observer.disconnect()
-    }, [data])
+    }, [data, isPresenting])
 
     const handleSaveTrip = async () => {
         if (!user) {
@@ -107,6 +128,7 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
             } else {
                 toast.success("Trip saved!", { description: "View it in your dashboard" })
                 setIsSaved(true)
+                if (result.trip?.id) setSavedTripId(result.trip.id)
             }
         } catch (error) {
             toast.error("Failed to save trip")
@@ -115,81 +137,179 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
         }
     }
 
+    const handleShare = () => {
+        if (!savedTripId) return
+        setIsShareModalOpen(true)
+    }
+
     return (
         <>
             <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-4xl mx-auto bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[85vh] md:h-[90vh]"
+                className={`w-full max-w-6xl mx-auto bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-1000 ${isPresenting ? 'h-[95vh] border-emerald-500/50' : 'h-[85vh] md:h-[90vh]'}`}
             >
                 {/* Top Section: Fixed Map */}
-                <div className="relative h-[55%] shrink-0 bg-neutral-900 group overflow-hidden border-b border-white/10">
+                <div className={`relative shrink-0 bg-neutral-900 group overflow-hidden border-b border-white/10 transition-all duration-1000 ${isPresenting ? 'h-full' : 'h-[65%]'}`}>
                     <CinemaMap locations={locations} activeIndex={activeDayIndex} />
 
                     {/* Overlay Title */}
                     <div className="absolute bottom-6 left-8 right-20 pointer-events-none">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium uppercase tracking-wider border border-emerald-500/20 mb-3 backdrop-blur-md">
                             <CheckCircle className="size-3" />
-                            AI Curated
+                            {isShared ? "Shared Application" : "AI Curated"}
                         </div>
                         <h2 className="text-4xl md:text-5xl font-bold text-white mb-1 drop-shadow-lg max-w-full">{data.trip_name}</h2>
                     </div>
 
-                    {/* Save Button */}
-                    <button
-                        onClick={handleSaveTrip}
-                        disabled={isSaving || isSaved}
-                        className={`absolute top-4 left-4 z-20 flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all duration-300 ${isSaved
-                            ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
-                            : "bg-black/40 border-white/20 text-white hover:bg-black/60 hover:border-white/30"
-                            }`}
-                    >
-                        {isSaving ? (
-                            <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                            <Heart className={`size-4 ${isSaved ? "fill-current" : ""}`} />
+                    {/* Action Buttons Group (Left) */}
+                    <div className="absolute top-4 left-4 z-20 flex items-center gap-3">
+                        {/* Primary Action: Present Trip */}
+                        {!isPresenting && (
+                            <button
+                                onClick={() => setIsPresenting(true)}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500 text-black font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 hover:scale-105 active:scale-95 transition-all duration-300 group"
+                            >
+                                <Play className="size-4 fill-current group-hover:scale-110 transition-transform" />
+                                <span className="text-sm">Present Trip</span>
+                            </button>
                         )}
-                        <span className="text-sm font-medium">
-                            {isSaved ? "Saved" : "Save Trip"}
-                        </span>
-                    </button>
 
-                    {/* PDF Download Button - Client Only */}
-                    {isMounted && (
-                        <button
-                            onClick={async () => {
-                                const blob = await pdf(<TripPdfDocument data={data} />).toBlob()
-                                const url = URL.createObjectURL(blob)
-                                // Open in new tab - user can save with Cmd+S
-                                window.open(url, '_blank')
-                            }}
-                            className="absolute top-4 right-4 z-20 flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border bg-black/40 border-white/20 text-white hover:bg-black/60 hover:border-white/30 transition-all duration-300"
-                        >
-                            <ArrowRight className="size-4 rotate-90" />
-                            <span className="text-sm font-medium">Download PDF</span>
-                        </button>
+                        {/* Secondary Actions Toolbar */}
+                        <div className="flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+                            {!isShared ? (
+                                <>
+                                    <div className="relative group/tooltip">
+                                        <button
+                                            onClick={handleSaveTrip}
+                                            disabled={isSaving || isSaved}
+                                            className={`p-2 rounded-full transition-all duration-300 ${isSaved
+                                                ? "text-emerald-400 bg-emerald-500/10"
+                                                : "text-white/70 hover:text-white hover:bg-white/10"
+                                                }`}
+                                        >
+                                            {isSaving ? (
+                                                <Loader2 className="size-4 animate-spin" />
+                                            ) : (
+                                                <Heart className={`size-4 ${isSaved ? "fill-current" : ""}`} />
+                                            )}
+                                        </button>
+                                        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-black/80 text-[10px] text-white opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap backdrop-blur-sm border border-white/10">
+                                            {isSaved ? "Saved" : "Save Trip"}
+                                        </div>
+                                    </div>
+
+                                    {isSaved && savedTripId && (
+                                        <div className="relative group/tooltip">
+                                            <button
+                                                onClick={handleShare}
+                                                className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+                                            >
+                                                <Share2 className="size-4" />
+                                            </button>
+                                            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-black/80 text-[10px] text-white opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap backdrop-blur-sm border border-white/10">
+                                                Share
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <button
+                                    onClick={() => router.push('/')}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+                                >
+                                    <Sparkles className="size-4 text-yellow-300" />
+                                    <span className="text-xs font-medium hidden md:inline">Plan My Own</span>
+                                </button>
+                            )}
+
+                            {/* PDF Download Button - Client Only */}
+                            {isMounted && !isShared && !isPresenting && (
+                                <div className="relative group/tooltip">
+                                    <button
+                                        onClick={async () => {
+                                            const blob = await pdf(<TripPdfDocument data={data} />).toBlob()
+                                            const url = URL.createObjectURL(blob)
+                                            window.open(url, '_blank')
+                                        }}
+                                        className="hidden md:flex p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+                                    >
+                                        <ArrowRight className="size-4 rotate-90" />
+                                    </button>
+                                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-black/80 text-[10px] text-white opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none whitespace-nowrap backdrop-blur-sm border border-white/10">
+                                        Download PDF
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Presentation Mode Controls (Exit) */}
+                    {isPresenting && (
+                        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 animate-in slide-in-from-top-4">
+                            <button
+                                onClick={() => setIsPresenting(false)}
+                                className="flex items-center gap-2 px-6 py-2 rounded-full bg-red-500/20 border border-red-500/50 text-red-200 hover:bg-red-500/30 transition-all shadow-xl backdrop-blur-md"
+                            >
+                                <X className="size-4" />
+                                <span className="text-sm font-medium">Exit Presentation</span>
+                            </button>
+                        </div>
                     )}
 
+                    {/* Presentation Mode Overlay Content */}
+                    <AnimatePresence>
+                        {isPresenting && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 50 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                className="absolute bottom-12 left-0 right-0 z-40 flex justify-center px-4"
+                            >
+                                <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-2xl w-full text-center shadow-2xl">
+                                    <h2 className="text-3xl font-bold text-white mb-2">Day {data.days[activeDayIndex].day}</h2>
+                                    <p className="text-emerald-400 font-medium uppercase tracking-widest text-sm mb-4">{data.days[activeDayIndex].theme}</p>
+                                    <div className="flex justify-center gap-8 text-left">
+                                        <div>
+                                            <p className="text-xs text-white/40 uppercase mb-1">Morning</p>
+                                            <p className="text-white text-sm">{data.days[activeDayIndex].morning}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-white/40 uppercase mb-1">Stay</p>
+                                            <p className="text-white text-sm">{data.days[activeDayIndex].stay.split(':')[0]}</p>
+                                        </div>
+                                    </div>
 
-                    {/* AI Concierge FAB */}
-                    <button
-                        onClick={() => setIsChatOpen(true)}
-                        className="absolute bottom-6 right-6 z-20 size-14 rounded-full bg-emerald-500 text-black shadow-lg shadow-emerald-500/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 group"
-                    >
-                        <motion.div
-                            animate={{ rotate: [0, 15, -15, 0] }}
-                            transition={{ repeat: Infinity, repeatDelay: 5, duration: 2 }}
-                        >
-                            <Sparkles className="size-6" />
-                        </motion.div>
-                        <span className="absolute right-full mr-4 bg-black/80 text-white text-xs font-medium px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-md border border-white/10">
-                            Ask Concierge
-                        </span>
-                    </button>
+                                    {/* Audio Concierge */}
+                                    <div className="flex justify-center mt-6">
+                                        <AudioConcierge
+                                            dayData={data.days[activeDayIndex]}
+                                            tripName={data.trip_name}
+                                        />
+                                    </div>
+
+                                    {/* Progress Bar */}
+                                    <div className="mt-6 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                        <motion.div
+                                            key={activeDayIndex}
+                                            initial={{ width: "0%" }}
+                                            animate={{ width: "100%" }}
+                                            transition={{ duration: 8, ease: "linear" }}
+                                            className="h-full bg-emerald-500"
+                                        />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+
+                    {/* AI Concierge FAB - Only for owner */}
+                    {!isShared && <ConciergeButton tripName={data.trip_name} onClick={() => setIsChatOpen(true)} />}
                 </div>
 
                 {/* Bottom Section: Scrollable Timeline */}
-                <div className="flex-1 overflow-y-auto relative bg-transparent scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                <div className={`flex-1 overflow-y-auto relative bg-transparent scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent transition-all duration-500 ${isPresenting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     <div className="flex-1 p-8 space-y-12">
                         {data.days.map((day, index) => (
                             <motion.div
@@ -268,6 +388,15 @@ export function TripItinerary({ data, onReset, isHalal = false }: TripItineraryP
                 onClose={() => setIsChatOpen(false)}
                 tripData={data}
             />
+
+            {savedTripId && (
+                <SocialShareModal
+                    isOpen={isShareModalOpen}
+                    onClose={() => setIsShareModalOpen(false)}
+                    tripName={data.trip_name}
+                    shareUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${savedTripId}`}
+                />
+            )}
         </>
     )
 }
@@ -382,4 +511,5 @@ function MoonIcon({ className }: { className?: string }) {
         </svg>
     )
 }
+
 

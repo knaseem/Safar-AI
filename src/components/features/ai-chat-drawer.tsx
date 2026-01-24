@@ -154,7 +154,11 @@ export function AIChatDrawer({ isOpen, onClose, tripData }: AIChatDrawerProps) {
                                         ? 'bg-white text-black font-medium'
                                         : 'bg-white/5 border border-white/10 text-white/90 shadow-lg'
                                         }`}>
-                                        {msg.content}
+                                        {msg.role === 'user' ? (
+                                            msg.content
+                                        ) : (
+                                            <FormattedMessage content={msg.content} />
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -205,5 +209,65 @@ export function AIChatDrawer({ isOpen, onClose, tripData }: AIChatDrawerProps) {
             )}
         </AnimatePresence>,
         document.body
+    )
+}
+
+function FormattedMessage({ content }: { content: string }) {
+    return (
+        <div className="space-y-2">
+            {content.split('\n').map((line, j) => {
+                // Handle bullet points
+                if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
+                    const cleanLine = line.trim().substring(2)
+                    // Format bold within bullet
+                    const parts = cleanLine.split(/(\*\*.*?\*\*)/g)
+                    return (
+                        <div key={j} className="flex gap-2 pl-1">
+                            <span className="text-emerald-400 mt-1.5">•</span>
+                            <span>
+                                {parts.map((part, k) => {
+                                    if (part.startsWith('**') && part.endsWith('**')) {
+                                        return <strong key={k} className="font-semibold text-emerald-100">{part.slice(2, -2)}</strong>
+                                    }
+                                    return part
+                                })}
+                            </span>
+                        </div>
+                    )
+                }
+                // Handle regular lines with bold
+                const parts = line.split(/(\*\*.*?\*\*)/g)
+                return (
+                    <p key={j} className={line.trim() === '' ? 'h-2' : ''}>
+                        {parts.map((part, k) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={k} className="font-semibold text-emerald-100">{part.slice(2, -2)}</strong>
+                            }
+                            return part
+                        })}
+                    </p>
+                )
+            })}
+        </div>
+    )
+}
+
+export function ConciergeButton({ onClick, tripName }: { onClick: () => void, tripName: string }) {
+    return (
+        <div className="fixed bottom-6 right-6 z-40">
+            <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200" />
+                <button
+                    onClick={onClick}
+                    className="relative size-14 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center text-emerald-400 shadow-xl hover:scale-110 active:scale-95 transition-all duration-300"
+                >
+                    <Sparkles className="size-6 animate-pulse" />
+                </button>
+                {/* Tooltip */}
+                <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-neutral-900/90 border border-white/10 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none backdrop-blur-md">
+                    Ask AI Concierge
+                </div>
+            </div>
+        </div>
     )
 }

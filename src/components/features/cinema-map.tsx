@@ -244,7 +244,7 @@ export function CinemaMap({ locations, activeIndex = 0 }: CinemaMapProps) {
                     duration: 2000 // Smooth zoom out
                 })
 
-                const speed = 0.02 // Faster speed for visible movement
+                const speed = 0.04 // Faster speed for visible movement
 
                 const animateAirplane = () => {
                     if (!map.current) return
@@ -294,11 +294,23 @@ export function CinemaMap({ locations, activeIndex = 0 }: CinemaMapProps) {
         locations.forEach((loc, i) => {
             const el = document.createElement('div')
             el.innerHTML = `
-                <div class="relative">
-                    <div class="w-7 h-7 bg-emerald-500 rounded-full border-2 border-white shadow-lg z-10 relative flex items-center justify-center">
-                        <span class="text-white text-xs font-bold">${i + 1}</span>
+                <div class="relative group cursor-pointer">
+                    <!-- Glowing Base (Pulsing) -->
+                    <div class="absolute -inset-4 bg-orange-500/20 rounded-full blur-xl animate-pulse"></div>
+                    
+                    <!-- Hover Glow -->
+                    <div class="absolute -inset-4 bg-orange-500/40 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    <!-- Main Marker Ring with Gradient Border -->
+                    <div class="relative w-9 h-9 rounded-full bg-gradient-to-br from-amber-300 via-orange-500 to-amber-700 p-[2px] shadow-[0_0_15px_rgba(249,115,22,0.5)] transition-transform duration-300 group-hover:scale-110">
+                        <!-- Inner Content -->
+                        <div class="w-full h-full rounded-full bg-black/80 flex items-center justify-center backdrop-blur-md">
+                            <span class="text-amber-400 text-sm font-bold font-mono">${i + 1}</span>
+                        </div>
                     </div>
-                    <div class="absolute inset-0 w-7 h-7 bg-emerald-500 rounded-full animate-ping opacity-50"></div>
+
+                    <!-- Top Shine/Jewel Effect -->
+                    <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-amber-200/50 blur-[1px] rounded-full"></div>
                 </div>
             `
             el.style.cssText = 'cursor: pointer;'
