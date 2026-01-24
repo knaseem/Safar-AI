@@ -426,7 +426,7 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                             >
                                 Confirm Booking • ${estimatedPrice.toLocaleString()}
                             </Button>
-                            <p className="text-center text-white/30 text-xs mt-4">Demo mode. No real charges.</p>
+                            <p className="text-center text-white/30 text-xs mt-4">Prices are real-time estimates for planning purposes. Final rates and availability are confirmed by our booking partners.</p>
                         </div>
                     )}
 
