@@ -6,12 +6,16 @@ import { Wallet, Plus, ArrowRight, Sparkles, AlertCircle } from "lucide-react"
 import { Navbar } from "@/components/layout/navbar"
 import { BudgetDashboard } from "@/components/features/budget-dashboard"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { toast } from "sonner"
+import { AnimatePresence } from "framer-motion"
+
 
 export default function BudgetPage() {
     const [tripsWithBudgets, setTripsWithBudgets] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [expandedTripId, setExpandedTripId] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -91,6 +95,7 @@ export default function BudgetPage() {
                 </div>
 
                 {tripsWithBudgets.length === 0 ? (
+                    /* ... (keep existing empty state) */
                     <div className="glass-dark rounded-3xl p-20 text-center border border-white/5">
                         <Wallet className="size-16 text-white/10 mx-auto mb-6" />
                         <h2 className="text-2xl font-bold mb-2">No active budgets found</h2>
@@ -102,41 +107,100 @@ export default function BudgetPage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-12">
-                        {tripsWithBudgets.map((trip) => (
-                            <motion.div
-                                key={trip.id}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5 }}
-                                className="space-y-6"
-                            >
-                                <div className="flex items-center justify-between px-2">
-                                    <div className="flex items-center gap-4">
-                                        <div className="size-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                                            <Plus className="size-6 text-white/40" />
+                    <div className="space-y-4">
+                        {tripsWithBudgets.map((trip) => {
+                            const isExpanded = expandedTripId === trip.id
+                            const budgetData = trip.budget?.categories || {}
+                            const spent = Object.values(budgetData).reduce((a: any, b: any) => a + b, 0) as number
+                            const limit = trip.budget?.total_budget || 2500
+                            const healthColor = spent > limit ? "text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]" :
+                                spent > limit * 0.8 ? "text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]" :
+                                    "text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+
+                            return (
+                                <motion.div
+                                    key={trip.id}
+                                    layout
+                                    className={cn(
+                                        "group overflow-hidden rounded-3xl border transition-all duration-500",
+                                        isExpanded ? "bg-white/[0.02] border-white/10 shadow-2xl" : "bg-neutral-900/40 border-white/5 hover:border-white/10 hover:bg-neutral-900/60"
+                                    )}
+                                >
+                                    {/* COLLAPSIBLE ROW */}
+                                    <div
+                                        onClick={() => setExpandedTripId(isExpanded ? null : trip.id)}
+                                        className="p-6 flex items-center justify-between cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-6">
+                                            {/* Status Beacon Icon */}
+                                            <div className={cn(
+                                                "size-12 rounded-2xl flex items-center justify-center transition-all duration-500 border",
+                                                isExpanded ? "bg-white/10 border-white/20 rotate-45" : "bg-white/[0.02] border-white/5"
+                                            )}>
+                                                <Plus className={cn("size-6 transition-colors", healthColor)} />
+                                            </div>
+
+                                            <div>
+                                                <h2 className="text-xl font-bold tracking-tight">{trip.trip_name || trip.destination}</h2>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <span className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-medium">
+                                                        {new Date(trip.created_at).toLocaleDateString()}
+                                                    </span>
+                                                    <div className="size-1 rounded-full bg-white/10" />
+                                                    <span className="text-[10px] text-white/40 font-mono">
+                                                        {trip.budget?.currency || "USD"} {spent.toLocaleString()} / {limit.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h2 className="text-2xl font-bold">{trip.trip_name || trip.destination}</h2>
-                                            <p className="text-xs text-white/40 uppercase tracking-widest">{new Date(trip.created_at).toLocaleDateString()}</p>
+
+                                        <div className="flex items-center gap-6">
+                                            {!isExpanded && (
+                                                <div className="hidden md:flex flex-col items-end">
+                                                    <div className="text-[10px] text-white/20 uppercase tracking-widest font-bold mb-1">Efficiency</div>
+                                                    <div className="h-1 w-24 bg-white/5 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-emerald-500/40"
+                                                            style={{ width: `${Math.min((spent / limit) * 100, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <Link href={`/trips/${trip.id}`} onClick={e => e.stopPropagation()}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-white/40 hover:text-white hover:bg-white/5 gap-2 px-3"
+                                                >
+                                                    <ArrowRight className="size-4" />
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </div>
-                                    <Link href={`/trips/${trip.id}`}>
-                                        <Button variant="link" className="text-emerald-400 hover:text-emerald-300 gap-2 p-0">
-                                            View Itinerary <ArrowRight className="size-4" />
-                                        </Button>
-                                    </Link>
-                                </div>
 
-                                <BudgetDashboard
-                                    totalBudget={trip.budget?.total_budget || 2500}
-                                    currency={trip.budget?.currency || "USD"}
-                                    initialCategories={trip.budget?.categories}
-                                    onSave={(cats) => handleSaveBudget(trip.id, cats, trip.budget?.total_budget || 2500, trip.budget?.currency || "USD")}
-                                />
-                            </motion.div>
-                        ))}
+                                    {/* EXPANDED CONTENT */}
+                                    <AnimatePresence>
+                                        {isExpanded && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                                            >
+                                                <div className="px-6 pb-8 border-t border-white/5 pt-8">
+                                                    <BudgetDashboard
+                                                        totalBudget={trip.budget?.total_budget || 2500}
+                                                        currency={trip.budget?.currency || "USD"}
+                                                        initialCategories={trip.budget?.categories}
+                                                        onSave={(cats) => handleSaveBudget(trip.id, cats, trip.budget?.total_budget || 2500, trip.budget?.currency || "USD")}
+                                                    />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            )
+                        })}
                     </div>
                 )}
             </div>
