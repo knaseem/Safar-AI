@@ -21,9 +21,13 @@ type Message = {
 
 const SUGGESTIONS = [
     "Recommend a dinner spot for Day 1",
-    "What's the weather like?",
+    "What's the weather forecast?",
     "Is this area walkable?",
-    "Find me a hidden gem nearby"
+    "Find a hidden gem nearby",
+    "How do I get around the city?",
+    "What are the must-try local foods?",
+    "Any cultural etiquette I should know?",
+    "Suggest a unique souvenir to buy"
 ]
 
 export function AIChatDrawer({ isOpen, onClose, tripData }: AIChatDrawerProps) {
@@ -118,7 +122,7 @@ export function AIChatDrawer({ isOpen, onClose, tripData }: AIChatDrawerProps) {
                         {/* Chat Area */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-6" ref={scrollRef}>
                             {messages.length === 0 && (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-0 animate-in fade-in duration-700">
+                                <div className="h-full flex flex-col items-center justify-center text-center p-6">
                                     <div className="size-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
                                         <Bot className="size-8 text-white/20" />
                                     </div>
@@ -254,19 +258,41 @@ function FormattedMessage({ content }: { content: string }) {
 
 export function ConciergeButton({ onClick, tripName }: { onClick: () => void, tripName: string }) {
     return (
-        <div className="fixed bottom-6 right-6 z-40">
-            <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200" />
-                <button
-                    onClick={onClick}
-                    className="relative size-14 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center text-emerald-400 shadow-xl hover:scale-110 active:scale-95 transition-all duration-300"
-                >
-                    <Sparkles className="size-6 animate-pulse" />
-                </button>
-                {/* Tooltip */}
-                <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-neutral-900/90 border border-white/10 text-xs font-medium text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none backdrop-blur-md">
-                    Ask AI Concierge
-                </div>
+        <div className="relative group/concierge">
+            {/* Glowing Ring Animation */}
+            <motion.div
+                className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-25"
+                animate={{
+                    opacity: [0.3, 0.6, 0.3],
+                    scale: [1, 1.2, 1]
+                }}
+                transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                }}
+            />
+
+            {/* Button Scale Animation */}
+            <motion.button
+                onClick={onClick}
+                className="relative p-2 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center text-emerald-400 shadow-xl"
+                animate={{
+                    scale: [1, 1.1, 1]
+                }}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                }}
+            >
+                <Sparkles className="size-4" />
+            </motion.button>
+            {/* Tooltip */}
+            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-black/80 text-[10px] text-white opacity-0 group-hover/concierge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap backdrop-blur-sm border border-white/10 z-50">
+                Ask AI Concierge
             </div>
         </div>
     )

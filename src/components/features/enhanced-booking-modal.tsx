@@ -13,6 +13,7 @@ import { TravelerSelector } from '@/components/ui/traveler-selector'
 import { AirportInput } from '@/components/ui/airport-input'
 import { TravelerCount, BookingContactInfo } from '@/types/booking'
 import { TripData } from './trip-itinerary'
+import { PackingList } from './packing-list'
 
 interface EnhancedBookingModalProps {
     tripData: TripData
@@ -27,7 +28,9 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
     const [step, setStep] = useState<BookingStep>('details')
     const [processingText, setProcessingText] = useState('Securing Flights...')
     const [confirmationCode, setConfirmationCode] = useState<string | null>(null)
-    const [bookingError, setBookingError] = useState<string | null>(null)
+    const [showPackingList, setShowPackingList] = useState(true)
+
+    // ... (rest of code)
 
     // Form state
     const [checkIn, setCheckIn] = useState<Date | null>(null)
@@ -544,7 +547,21 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                                 >
                                     View in Profile
                                 </Button>
+
                             </div>
+
+                            {/* AI Packing List Generator */}
+                            {showPackingList && (
+                                <div className="mt-8 text-left">
+                                    <PackingList
+                                        destination={destination}
+                                        isHalal={isHalal}
+                                        days={nights}
+                                        activities={tripData.days.map(d => d.theme)}
+                                        onSkip={() => setShowPackingList(false)}
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
                 </motion.div>

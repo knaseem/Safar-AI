@@ -223,6 +223,13 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                 </button>
                             )}
 
+                            {/* AI Concierge FAB - Only for owner or if consistent with design */}
+                            {!isShared && (
+                                <div className="ml-1">
+                                    <ConciergeButton tripName={data.trip_name} onClick={() => setIsChatOpen(true)} />
+                                </div>
+                            )}
+
                             {/* PDF Download Button - Client Only */}
                             {isMounted && !isShared && !isPresenting && (
                                 <div className="relative group/tooltip">
@@ -243,6 +250,18 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                             )}
                         </div>
                     </div>
+
+
+
+                    {/* Weather Widget - Positioned below controls (5-Day Forecast) */}
+                    {!isPresenting && (
+                        <div className="absolute top-20 left-4 z-20">
+                            <WeatherWidget
+                                lat={data.days[activeDayIndex].coordinates.lat}
+                                lng={data.days[activeDayIndex].coordinates.lng}
+                            />
+                        </div>
+                    )}
 
                     {/* Presentation Mode Controls (Exit) */}
                     {isPresenting && (
@@ -304,8 +323,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                     </AnimatePresence>
 
 
-                    {/* AI Concierge FAB - Only for owner */}
-                    {!isShared && <ConciergeButton tripName={data.trip_name} onClick={() => setIsChatOpen(true)} />}
+
                 </div>
 
                 {/* Bottom Section: Scrollable Timeline */}

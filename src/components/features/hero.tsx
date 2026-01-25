@@ -47,9 +47,9 @@ const HERO_IMAGES = [
         credit: "Unsplash"
     },
     {
-        url: "https://images.unsplash.com/photo-1559586616-361e18714958?q=80&w=2667&auto=format&fit=crop", // Reverting to safe, reliable AlUla (NEOM)
-        location: "AlUla, Saudi Arabia",
-        credit: "NEOM"
+        url: "https://images.pexels.com/photos/11215343/pexels-photo-11215343.jpeg?auto=compress&cs=tinysrgb&w=2600", // Elephant Rock - Pexels
+        location: "Elephant Rock, AlUla",
+        credit: "Pexels"
     },
     {
         url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2670&auto=format&fit=crop",
@@ -259,8 +259,8 @@ export function Hero({ initialPrompt }: HeroProps) {
                         <motion.img
                             src={activeImages[currentImageIndex].url}
                             alt={activeImages[currentImageIndex].location}
-                            initial={{ scale: 1.05 }}
-                            animate={{ scale: 1.15 }}
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1.00 }}
                             transition={{ duration: 12, ease: "linear" }}
                             className="w-full h-full object-cover"
                             onError={(e) => {

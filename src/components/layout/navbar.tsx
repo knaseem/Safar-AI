@@ -44,12 +44,12 @@ export function Navbar() {
                                     "0px 0px 20px rgba(255,255,255,0.8)",
                                     "0px 0px 0px rgba(255,255,255,0)"
                                 ],
-                                scale: [1, 1.1, 1]
+                                scale: [1, 1.15, 1]
                             }}
                             transition={{
-                                duration: 1.5,
+                                duration: 1,
                                 repeat: Infinity,
-                                repeatDelay: 10,
+                                repeatDelay: 2,
                                 ease: "easeInOut"
                             }}
                             className="bg-white p-1.5 rounded-lg group-hover:bg-primary transition-colors"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Cloud, CloudRain, Sun, CloudLightning, CloudSnow, Loader2, ThermometerSun, Wind, Droplets, ChevronDown } from "lucide-react"
+import { Cloud, CloudRain, Sun, CloudLightning, CloudSnow, Loader2, Wind, Droplets, ChevronDown } from "lucide-react"
 
 interface WeatherWidgetProps {
     lat: number
@@ -75,7 +75,7 @@ export function WeatherWidget({ lat, lng }: WeatherWidgetProps) {
             try {
                 // Fetch from Open-Meteo including wind and humidity AND daily forecast
                 const res = await fetch(
-                    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=8`
+                    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=6`
                 )
                 if (!res.ok) throw new Error("Failed to fetch weather")
                 const data = await res.json()
@@ -193,7 +193,7 @@ export function WeatherWidget({ lat, lng }: WeatherWidgetProps) {
                 </div>
             </motion.div>
 
-            {/* 7-Day Forecast Vertical Pane - Appears on Click */}
+            {/* 5-Day Forecast Vertical Pane - Appears on Click */}
             <AnimatePresence>
                 {showForecast && (
                     <motion.div
@@ -208,14 +208,14 @@ export function WeatherWidget({ lat, lng }: WeatherWidgetProps) {
                             className="flex flex-col p-2 space-y-1 cursor-default min-w-[200px]"
                         >
                             <div className="text-[10px] uppercase tracking-widest text-white/40 font-medium px-2 py-1 mb-1">
-                                7-Day Forecast
+                                5-Day Forecast
                             </div>
 
                             {daily?.time.map((date: string, i: number) => {
                                 // Skip today (i === 0) as it's displayed in main widget
                                 if (i === 0) return null
-                                // Show next 7 days (indices 1-7)
-                                if (i > 7) return null
+                                // Show next 5 days (indices 1-5)
+                                if (i > 5) return null
 
                                 const dateObj = new Date(date)
                                 const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(dateObj)
