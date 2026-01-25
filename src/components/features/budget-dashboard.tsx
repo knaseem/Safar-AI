@@ -264,11 +264,11 @@ export function BudgetDashboard({
                     </motion.div>
 
                     <Button
-                        variant={isEditing ? "default" : "outline"}
+                        variant={isEditing ? "premium" : "outline"}
                         size="sm"
                         className={cn(
                             "w-full rounded-xl transition-all font-bold",
-                            isEditing ? "bg-emerald-500 text-white hover:bg-emerald-600" : "border-white/10 hover:bg-white/5 text-white/60 hover:text-white"
+                            !isEditing && "border-white/10 bg-white text-emerald-900 hover:text-emerald-800"
                         )}
                         onClick={handleSave}
                     >
