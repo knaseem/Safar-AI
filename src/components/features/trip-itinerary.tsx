@@ -18,6 +18,8 @@ import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 import { useRouter } from 'next/navigation'
 import { generateAffiliateLink } from "@/lib/affiliate"
+import { AtmosphericBackground } from "./atmospheric-background"
+import { useSound } from "./ambient-sound-provider"
 
 export type TripData = {
     trip_name: string
@@ -53,11 +55,35 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
     const [isSaved, setIsSaved] = useState(!!tripId)
     const [savedTripId, setSavedTripId] = useState<string | null>(tripId || null)
     const [activeDayIndex, setActiveDayIndex] = useState(0)
+    const [timeOfDay, setTimeOfDay] = useState<'Morning' | 'Afternoon' | 'Evening'>('Morning')
     const [isMounted, setIsMounted] = useState(false)
     const dayRefs = useRef<(HTMLDivElement | null)[]>([])
     const { user } = useAuth()
+    const { setTheme } = useSound()
     const router = useRouter()
     const locations = data.days.map(d => d.coordinates)
+
+    // Set Ambient Sound Theme based on destination keywords
+    useEffect(() => {
+        const dest = data.trip_name.toLowerCase() + (data.days[0]?.theme?.toLowerCase() || '')
+
+        // Default to city (Urban)
+        let newTheme: 'city' | 'nature' | 'ocean' | 'desert' | 'cafe' = 'city'
+
+        if (dest.includes('beach') || dest.includes('island') || dest.includes('maldives') || dest.includes('bali') || dest.includes('coast')) {
+            newTheme = 'ocean'
+        } else if (dest.includes('hiking') || dest.includes('mountain') || dest.includes('forest') || dest.includes('park') || dest.includes('alps')) {
+            newTheme = 'nature'
+        } else if (dest.includes('dubai') || dest.includes('cairo') || dest.includes('desert') || dest.includes('dune') || dest.includes('safari')) {
+            newTheme = 'desert'
+        } else if (dest.includes('paris') || dest.includes('rome') || dest.includes('coffee') || dest.includes('cafe') || dest.includes('culinary')) {
+            newTheme = 'cafe'
+        }
+
+        setTheme(newTheme)
+
+        return () => setTheme('quiet') // Reset on unmount
+    }, [data.trip_name])
 
     useEffect(() => {
         setIsMounted(true)
@@ -150,8 +176,14 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                 animate={{ opacity: 1, y: 0 }}
                 className={`w-full max-w-6xl mx-auto bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-1000 ${isPresenting ? 'h-[95vh] border-emerald-500/50' : 'h-[85vh] md:h-[90vh]'}`}
             >
+                {/* Atmospheric Background Layer */}
+                <AtmosphericBackground
+                    destination={data.days[activeDayIndex]?.theme?.split('in ')?.[1] || data.trip_name || 'Paris'}
+                    timeOfDay={timeOfDay}
+                />
+
                 {/* Top Section: Fixed Map */}
-                <div className={`relative shrink-0 bg-neutral-900 group overflow-hidden border-b border-white/10 transition-all duration-1000 ${isPresenting ? 'h-full' : 'h-[55%]'}`}>
+                <div className={`relative shrink-0 bg-neutral-900/60 group overflow-hidden border-b border-white/10 transition-all duration-1000 ${isPresenting ? 'h-full' : 'h-[55%]'}`}>
                     <CinemaMap locations={locations} activeIndex={activeDayIndex} />
 
                     {/* Overlay Title */}
@@ -338,24 +370,30 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <ActivityCard
-                                        time="Morning"
-                                        title={day.morning}
-                                        destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
-                                        isActive={activeDayIndex === index}
-                                    />
-                                    <ActivityCard
-                                        time="Afternoon"
-                                        title={day.afternoon}
-                                        destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
-                                        isActive={activeDayIndex === index}
-                                    />
-                                    <ActivityCard
-                                        time="Evening"
-                                        title={day.evening}
-                                        destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
-                                        isActive={activeDayIndex === index}
-                                    />
+                                    <div onMouseEnter={() => setTimeOfDay('Morning')}>
+                                        <ActivityCard
+                                            time="Morning"
+                                            title={day.morning}
+                                            destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                            isActive={activeDayIndex === index}
+                                        />
+                                    </div>
+                                    <div onMouseEnter={() => setTimeOfDay('Afternoon')}>
+                                        <ActivityCard
+                                            time="Afternoon"
+                                            title={day.afternoon}
+                                            destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                            isActive={activeDayIndex === index}
+                                        />
+                                    </div>
+                                    <div onMouseEnter={() => setTimeOfDay('Evening')}>
+                                        <ActivityCard
+                                            time="Evening"
+                                            title={day.evening}
+                                            destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                            isActive={activeDayIndex === index}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="mt-4 flex items-center justify-between text-white/40 text-sm bg-white/5 p-3 rounded-lg border border-white/5 hover:border-emerald-500/30 transition-colors group/stay">
@@ -390,7 +428,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                             ← Back
                         </button>
                         <Button size="lg" className="bg-white text-black hover:bg-white/90" onClick={() => setIsBookingOpen(true)}>
-                            Proprietary Booking <ArrowRight className="size-4 ml-2" />
+                            Request Custom Package <ArrowRight className="size-4 ml-2" />
                         </Button>
                     </div>
                 </div>

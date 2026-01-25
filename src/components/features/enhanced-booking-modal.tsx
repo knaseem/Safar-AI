@@ -14,6 +14,7 @@ import { AirportInput } from '@/components/ui/airport-input'
 import { TravelerCount, BookingContactInfo } from '@/types/booking'
 import { TripData } from './trip-itinerary'
 import { PackingList } from './packing-list'
+import { generateAffiliateLink } from '@/lib/affiliate'
 
 interface EnhancedBookingModalProps {
     tripData: TripData
@@ -485,7 +486,11 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <button
                                         onClick={() => {
-                                            const url = 'https://aviasales.tpx.lv/fNn5QXxw'
+                                            const url = generateAffiliateLink('flight', {
+                                                origin: departureAirport?.code || 'any',
+                                                destination: tripData.trip_name.split(' ').slice(-1)[0] || 'Destination',
+                                                checkIn: checkIn?.toISOString().split('T')[0]
+                                            })
                                             window.open(url, '_blank')
                                         }}
                                         className="group relative overflow-hidden rounded-xl bg-[#0C73FE] p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -500,9 +505,12 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                                     <button
                                         onClick={() => {
                                             const city = tripData.trip_name.split(' ').slice(-1)[0] || 'Paris'
-                                            const checkin = checkIn?.toISOString().split('T')[0] || ''
-                                            const checkout = checkOut?.toISOString().split('T')[0] || ''
-                                            const url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&checkin=${checkin}&checkout=${checkout}&group_adults=${travelers.adults}&no_rooms=1&group_children=${travelers.children}`
+                                            const url = generateAffiliateLink('hotel', {
+                                                name: city, // Search for hotels in the city generally
+                                                destination: city,
+                                                checkIn: checkIn?.toISOString().split('T')[0],
+                                                checkOut: checkOut?.toISOString().split('T')[0]
+                                            })
                                             window.open(url, '_blank')
                                         }}
                                         className="group relative overflow-hidden rounded-xl bg-[#003580] p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -517,7 +525,10 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                                     <button
                                         onClick={() => {
                                             const city = tripData.trip_name.split(' ').slice(-1)[0] || 'Paris'
-                                            const url = `https://www.viator.com/searchResults/all?text=${encodeURIComponent(city)}`
+                                            const url = generateAffiliateLink('activity', {
+                                                destination: city,
+                                                name: `Things to do`
+                                            })
                                             window.open(url, '_blank')
                                         }}
                                         className="group relative overflow-hidden rounded-xl bg-[#00A680] p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"

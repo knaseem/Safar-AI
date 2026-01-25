@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { TravelHUD } from "@/components/features/travel-hud";
+import { AmbientSoundProvider } from "@/components/features/ambient-sound-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,8 +34,10 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider>
-          <TravelHUD />
-          {children}
+          <AmbientSoundProvider>
+            <TravelHUD />
+            {children}
+          </AmbientSoundProvider>
         </AuthProvider>
         <Toaster position="top-center" richColors />
         {/* Travelpayouts Verification */}

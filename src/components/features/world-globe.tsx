@@ -104,15 +104,18 @@ export function WorldGlobe() {
 
         mapboxgl.accessToken = MAPBOX_TOKEN
 
+        const isMobile = window.innerWidth < 768
+
         map.current = new mapboxgl.Map({
             container: mapContainer.current,
             style: isSatellite ? MAP_STYLES.satellite : MAP_STYLES.dark,
             projection: 'globe', // Enable 3D Globe
             center: [-20, 20], // Atlantic view
-            zoom: 1.5,
+            zoom: isMobile ? 0.8 : 1.5, // Further out on mobile
             pitch: 0,
             bearing: 0,
-            interactive: true
+            interactive: true,
+            cooperativeGestures: isMobile ? true : false, // Prevent page scroll hijack on mobile
         })
 
         const m = map.current
