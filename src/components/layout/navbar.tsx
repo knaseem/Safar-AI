@@ -65,6 +65,7 @@ export function Navbar() {
                         <Link href="#destinations" className="hover:text-white transition-colors">Destinations</Link>
                         <Link href="#experience" className="hover:text-white transition-colors">The Experience</Link>
                         <Link href="#membership" className="hover:text-white transition-colors">Membership</Link>
+                        <Link href="/budget" className="hover:text-white transition-colors">Budget</Link>
                         <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
                     </nav>
 
@@ -108,6 +109,18 @@ export function Navbar() {
                                                     <Map className="size-4" />
                                                     <span className="text-sm font-medium">My Profile</span>
                                                 </Link>
+                                                {/* Mobile Navigation Links */}
+                                                <div className="md:hidden mt-2 pt-2 border-t border-white/10">
+                                                    <Link href="/#membership" onClick={() => setIsUserMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+                                                        Membership
+                                                    </Link>
+                                                    <Link href="/budget" onClick={() => setIsUserMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+                                                        Budget
+                                                    </Link>
+                                                    <Link href="/blog" onClick={() => setIsUserMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+                                                        Blog
+                                                    </Link>
+                                                </div>
                                                 <button
                                                     onClick={handleSignOut}
                                                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { TripItinerary } from "@/components/features/trip-itinerary"
+import { TripContent } from "@/components/features/trip-content"
 import { Navbar } from "@/components/layout/navbar"
 import { redirect } from "next/navigation"
 
@@ -12,7 +12,6 @@ export default async function TripPage(props: { params: Promise<{ id: string }> 
         redirect("/")
     }
 
-    // Fetch Trip ensuring ownership
     // Fetch Trip ensuring ownership
     const { data: trip, error } = await supabase
         .from("saved_trips")
@@ -30,14 +29,13 @@ export default async function TripPage(props: { params: Promise<{ id: string }> 
             <Navbar />
 
             <div className="container mx-auto px-4 pt-24 pb-12">
-                <TripItinerary
-                    data={trip.trip_data as any}
-                    isHalal={trip.is_halal}
-                    // Not shared, so "Save" (already saved) and "Share" buttons appear
-                    isShared={false}
+                <TripContent
                     tripId={trip.id}
+                    tripData={trip.trip_data as any}
+                    isHalal={trip.is_halal}
                 />
             </div>
         </main>
     )
 }
+
