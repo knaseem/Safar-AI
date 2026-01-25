@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from "framer-motion"
-import { CheckCircle, ArrowRight, Heart, Loader2, Sparkles, Share2, Copy, Play, X } from "lucide-react"
+import { CheckCircle, ArrowRight, Heart, Loader2, Sparkles, Share2, Copy, Play, X, CloudSun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { CinemaMap } from "./cinema-map"
 import { EnhancedBookingModal } from "./enhanced-booking-modal"
@@ -17,6 +17,7 @@ import { saveAs } from "file-saver"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 import { useRouter } from 'next/navigation'
+import { generateAffiliateLink } from "@/lib/affiliate"
 
 export type TripData = {
     trip_name: string
@@ -47,9 +48,9 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
     const [isChatOpen, setIsChatOpen] = useState(false)
     const [isShareModalOpen, setIsShareModalOpen] = useState(false)
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-    const [isPresenting, setIsPresenting] = useState(false) // New Presentation State
+    const [isPresenting, setIsPresenting] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
-    const [isSaved, setIsSaved] = useState(!!tripId) // If ID passed, it's already saved
+    const [isSaved, setIsSaved] = useState(!!tripId)
     const [savedTripId, setSavedTripId] = useState<string | null>(tripId || null)
     const [activeDayIndex, setActiveDayIndex] = useState(0)
     const [isMounted, setIsMounted] = useState(false)
@@ -67,7 +68,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
 
         const interval = setInterval(() => {
             setActiveDayIndex(prev => (prev + 1) % data.days.length)
-        }, 8000) // 8 seconds per day
+        }, 8000)
 
         return () => clearInterval(interval)
     }, [isPresenting, data.days.length])
@@ -75,7 +76,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
-                if (isPresenting) return // Disable scroll observer during presentation
+                if (isPresenting) return
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         const index = Number(entry.target.getAttribute('data-index'))
@@ -85,7 +86,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                     }
                 })
             },
-            { rootMargin: '-40% 0px -40% 0px' } // Trigger when element is in middle of viewport
+            { rootMargin: '-40% 0px -40% 0px' }
         )
 
         dayRefs.current.forEach((el) => {
@@ -150,7 +151,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                 className={`w-full max-w-6xl mx-auto bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-1000 ${isPresenting ? 'h-[95vh] border-emerald-500/50' : 'h-[85vh] md:h-[90vh]'}`}
             >
                 {/* Top Section: Fixed Map */}
-                <div className={`relative shrink-0 bg-neutral-900 group overflow-hidden border-b border-white/10 transition-all duration-1000 ${isPresenting ? 'h-full' : 'h-[65%]'}`}>
+                <div className={`relative shrink-0 bg-neutral-900 group overflow-hidden border-b border-white/10 transition-all duration-1000 ${isPresenting ? 'h-full' : 'h-[55%]'}`}>
                     <CinemaMap locations={locations} activeIndex={activeDayIndex} />
 
                     {/* Overlay Title */}
@@ -164,7 +165,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
 
                     {/* Action Buttons Group (Left) */}
                     <div className="absolute top-4 left-4 z-20 flex items-center gap-3">
-                        {/* Primary Action: Present Trip */}
                         {!isPresenting && (
                             <button
                                 onClick={() => setIsPresenting(true)}
@@ -175,7 +175,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                             </button>
                         )}
 
-                        {/* Secondary Actions Toolbar */}
                         <div className="flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
                             {!isShared ? (
                                 <>
@@ -223,14 +222,12 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                 </button>
                             )}
 
-                            {/* AI Concierge FAB - Only for owner or if consistent with design */}
                             {!isShared && (
                                 <div className="ml-1">
                                     <ConciergeButton tripName={data.trip_name} onClick={() => setIsChatOpen(true)} />
                                 </div>
                             )}
 
-                            {/* PDF Download Button - Client Only */}
                             {isMounted && !isShared && !isPresenting && (
                                 <div className="relative group/tooltip">
                                     <button
@@ -251,9 +248,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                         </div>
                     </div>
 
-
-
-                    {/* Weather Widget - Positioned below controls (5-Day Forecast) */}
                     {!isPresenting && (
                         <div className="absolute top-20 left-4 z-20">
                             <WeatherWidget
@@ -263,7 +257,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                         </div>
                     )}
 
-                    {/* Presentation Mode Controls (Exit) */}
                     {isPresenting && (
                         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 animate-in slide-in-from-top-4">
                             <button
@@ -276,7 +269,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                         </div>
                     )}
 
-                    {/* Presentation Mode Overlay Content */}
                     <AnimatePresence>
                         {isPresenting && (
                             <motion.div
@@ -299,7 +291,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                         </div>
                                     </div>
 
-                                    {/* Audio Concierge */}
                                     <div className="flex justify-center mt-6">
                                         <AudioConcierge
                                             dayData={data.days[activeDayIndex]}
@@ -307,7 +298,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                         />
                                     </div>
 
-                                    {/* Progress Bar */}
                                     <div className="mt-6 h-1 w-full bg-white/10 rounded-full overflow-hidden">
                                         <motion.div
                                             key={activeDayIndex}
@@ -321,9 +311,6 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                             </motion.div>
                         )}
                     </AnimatePresence>
-
-
-
                 </div>
 
                 {/* Bottom Section: Scrollable Timeline */}
@@ -339,35 +326,55 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                 transition={{ delay: index * 0.1 }}
                                 className={`relative pl-8 border-l last:border-0 transition-colors duration-500 ${activeDayIndex === index ? "border-emerald-500/50" : "border-white/10"}`}
                             >
-                                {/* Day Marker */}
-                                <div className="absolute -left-3 top-0 h-6 w-6 rounded-full bg-emerald-500 border-4 border-black flex items-center justify-center">
-                                    <div className="h-1.5 w-1.5 bg-white rounded-full" />
+                                <div className={`absolute -left-3 top-0 h-6 w-6 rounded-full border-4 border-black flex items-center justify-center transition-colors duration-500 ${activeDayIndex === index ? "bg-emerald-500 scale-110" : "bg-white/20"}`}>
+                                    <div className={`h-1.5 w-1.5 rounded-full ${activeDayIndex === index ? "bg-white" : "bg-black/50"}`} />
                                 </div>
 
                                 <div className="mb-6">
-                                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                    <h3 className={`text-xl font-bold transition-colors duration-300 ${activeDayIndex === index ? "text-emerald-400" : "text-white"}`}>
                                         Day {day.day}
-                                        <span className="text-white/40 font-normal text-base">— {day.theme}</span>
                                     </h3>
+                                    <div className="text-white/60 font-medium text-base mt-1">{day.theme}</div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <ActivityCard time="Morning" title={day.morning} destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name} />
-                                    <ActivityCard time="Afternoon" title={day.afternoon} destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name} />
-                                    <ActivityCard time="Evening" title={day.evening} destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name} />
+                                    <ActivityCard
+                                        time="Morning"
+                                        title={day.morning}
+                                        destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                        isActive={activeDayIndex === index}
+                                    />
+                                    <ActivityCard
+                                        time="Afternoon"
+                                        title={day.afternoon}
+                                        destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                        isActive={activeDayIndex === index}
+                                    />
+                                    <ActivityCard
+                                        time="Evening"
+                                        title={day.evening}
+                                        destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                        isActive={activeDayIndex === index}
+                                    />
                                 </div>
 
                                 <div className="mt-4 flex items-center justify-between text-white/40 text-sm bg-white/5 p-3 rounded-lg border border-white/5 hover:border-emerald-500/30 transition-colors group/stay">
                                     <div className="flex items-center gap-2">
-                                        <MoonIcon className="size-4" />
-                                        <span className="uppercase tracking-widest text-[10px]">Stay:</span>
+                                        <MoonIcon className="size-4 text-indigo-300" />
+                                        <span className="uppercase tracking-widest text-[10px] text-indigo-300/60">Stay:</span>
                                         <span className="text-white/80">{day.stay}</span>
                                         <HotelVerificationBadge hotel={day.stay} />
                                     </div>
                                     <button
                                         onClick={() => {
                                             const hotel = day.stay.split(':')[0]
-                                            window.open(`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotel)}`, '_blank')
+                                            const url = generateAffiliateLink('hotel', {
+                                                name: hotel,
+                                                destination: data.days[0]?.theme || '',
+                                                // Default to next month for checking rates if no dates
+                                                checkIn: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0]
+                                            })
+                                            window.open(url, '_blank')
                                         }}
                                         className="opacity-0 group-hover/stay:opacity-100 flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded transition-all hover:bg-emerald-500/20"
                                     >
@@ -387,7 +394,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                         </Button>
                     </div>
                 </div>
-            </motion.div >
+            </motion.div>
 
             <EnhancedBookingModal
                 tripData={data}
@@ -424,7 +431,6 @@ function HotelVerificationBadge({ hotel }: { hotel: string }) {
     const [savings, setSavings] = useState(0)
 
     useEffect(() => {
-        // Auto-verify on mount for "Autonomous" feel
         const verify = async () => {
             setStatus('checking')
             try {
@@ -440,7 +446,6 @@ function HotelVerificationBadge({ hotel }: { hotel: string }) {
                 setStatus('idle')
             }
         }
-        // Stagger checks so they don't all spin at once
         const timeout = setTimeout(verify, Math.random() * 2000 + 500)
         return () => clearTimeout(timeout)
     }, [hotel])
@@ -450,7 +455,7 @@ function HotelVerificationBadge({ hotel }: { hotel: string }) {
     if (status === 'checking') return (
         <span className="flex items-center gap-1.5 text-[10px] text-white/40 ml-2 animate-pulse">
             <Loader2 className="size-3 animate-spin" />
-            AI Verifying...
+            Verifying...
         </span>
     )
 
@@ -463,52 +468,61 @@ function HotelVerificationBadge({ hotel }: { hotel: string }) {
     )
 }
 
-function ActivityCard({ time, title, destination }: { time: string, title: string, destination: string }) {
+function ActivityCard({ time, title, destination, isActive = false }: { time: string, title: string, destination: string, isActive?: boolean }) {
     const [status, setStatus] = useState<'idle' | 'checking' | 'verified'>('idle')
 
-    // Extract key term for search (remove generic words if needed, but usually full title + destination works better)
-    // Simple heuristic: search for the whole activity string
     const handleBook = () => {
-        const query = `${title} ${destination}`
-        window.open(`https://www.viator.com/searchResults/all?text=${encodeURIComponent(query)}`, '_blank')
+        const url = generateAffiliateLink('activity', {
+            name: title,
+            destination: destination
+        })
+        window.open(url, '_blank')
     }
 
-    // Trigger verification on hover
     const handleMouseEnter = () => {
         if (status === 'idle') {
             setStatus('checking')
-            // Mock API call
             setTimeout(() => setStatus('verified'), 1200)
         }
     }
 
     return (
         <div
-            className="group p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-emerald-500/30 transition-all flex flex-col h-full relative overflow-hidden"
+            className={`group p-4 rounded-xl border transition-all flex flex-col h-full relative overflow-hidden ${isActive
+                ? "bg-white/10 border-emerald-500/30 hover:bg-white/15"
+                : "bg-white/5 border-white/5 hover:bg-white/10"
+                }`}
             onMouseEnter={handleMouseEnter}
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
-                    <div className="text-[10px] uppercase tracking-widest text-emerald-400">{time}</div>
-                    {status === 'checking' && <Loader2 className="size-3 text-white/20 animate-spin" />}
-                    {status === 'verified' && (
-                        <div className="flex items-center gap-1">
-                            <div className="size-1.5 rounded-full bg-emerald-500" />
-                            <span className="text-[9px] text-white/40">Live</span>
+                    <div className={`p-1 rounded-md ${isActive ? "bg-emerald-500/20" : "bg-white/10"}`}>
+                        <div className={isActive ? "text-emerald-400" : "text-white/60"}>
+                            {time === 'Morning' ? '🌅' : time === 'Afternoon' ? '☀️' : '🌙'}
                         </div>
-                    )}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">{time}</div>
                 </div>
-                <button
-                    onClick={handleBook}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-emerald-500 text-black p-1 rounded hover:bg-emerald-400 shadow-lg shadow-emerald-500/20"
-                    title="Book Activity"
-                >
-                    <ArrowRight className="size-3 -rotate-45" />
-                </button>
+                {status === 'verified' && (
+                    <div className="flex items-center gap-1">
+                        <div className="size-1.5 rounded-full bg-emerald-500" />
+                    </div>
+                )}
             </div>
-            <p className="text-white/90 text-sm font-medium leading-relaxed flex-1">
+
+            <p className="text-white/90 text-sm font-medium leading-relaxed flex-1 line-clamp-3 group-hover:line-clamp-none transition-all">
                 {title}
             </p>
+
+            <div className="mt-3 pt-3 border-t border-white/5 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[10px] text-white/40">Verified Activity</span>
+                <button
+                    onClick={handleBook}
+                    className="flex items-center gap-1 text-[10px] bg-emerald-500 text-black px-2 py-1 rounded hover:bg-emerald-400 font-bold"
+                >
+                    Book <ArrowRight className="size-3" />
+                </button>
+            </div>
         </div >
     )
 }
@@ -529,5 +543,3 @@ function MoonIcon({ className }: { className?: string }) {
         </svg>
     )
 }
-
-

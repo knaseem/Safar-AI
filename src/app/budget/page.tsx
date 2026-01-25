@@ -101,7 +101,7 @@ export default function BudgetPage() {
                         <h2 className="text-2xl font-bold mb-2">No active budgets found</h2>
                         <p className="text-white/40 mb-8">Save an itinerary to start optimizing your travel spend.</p>
                         <Link href="/">
-                            <Button variant="outline" className="border-white/10 text-white hover:bg-white/5">
+                            <Button className="bg-white text-black hover:bg-white/90 font-bold rounded-xl px-6">
                                 Discover Destinations
                             </Button>
                         </Link>

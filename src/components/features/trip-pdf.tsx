@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
     stayText: {
         fontSize: 10,
         color: '#ffffff',
+        flex: 1,
     },
     // Footer
     footer: {

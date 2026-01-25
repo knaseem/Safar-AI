@@ -66,6 +66,7 @@ export function Navbar() {
                         <Link href="#experience" className="hover:text-white transition-colors">The Experience</Link>
                         <Link href="#membership" className="hover:text-white transition-colors">Membership</Link>
                         <Link href="/budget" className="hover:text-white transition-colors">Budget</Link>
+                        <Link href="/world" className="hover:text-white transition-colors">World</Link>
                         <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
                     </nav>
 
