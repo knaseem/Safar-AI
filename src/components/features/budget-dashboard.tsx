@@ -49,6 +49,8 @@ export function BudgetDashboard({
         other: 0
     })
     const [isExpanded, setIsExpanded] = useState(true)
+    const [isEditing, setIsEditing] = useState(false)
+    const [tempBudget, setTempBudget] = useState(totalBudget)
 
     const categories: BudgetCategory[] = [
         { id: 'flights', label: 'Flights', value: spentCategories.flights, color: '#3b82f6', icon: Plane },
@@ -62,12 +64,22 @@ export function BudgetDashboard({
         Object.values(spentCategories).reduce((a, b) => a + b, 0),
         [spentCategories])
 
-    const remaining = totalBudget - totalSpent
-    const spentPercentage = (totalSpent / totalBudget) * 100
+    const remaining = tempBudget - totalSpent
+    const spentPercentage = (totalSpent / tempBudget) * 100
+
+    const handleCategoryChange = (id: string, val: string) => {
+        const num = parseInt(val) || 0
+        setSpentCategories(prev => ({ ...prev, [id]: num }))
+    }
+
+    const handleSave = () => {
+        onSave?.(spentCategories)
+        setIsEditing(false)
+    }
 
     // AI Recommendation Logic
     const getAIRecommendation = () => {
-        if (totalSpent > totalBudget) {
+        if (totalSpent > tempBudget) {
             const highest = categories.reduce((a, b) => a.value > b.value ? a : b)
             return {
                 type: "warning",
@@ -75,11 +87,11 @@ export function BudgetDashboard({
                 tip: "Try switching to a Premium Economy flight or a Boutique Villa."
             }
         }
-        if (spentPercentage > 80) {
+        if (spentPercentage > 85) {
             return {
                 type: "caution",
-                message: "You have used 80% of your budget. High-value adventure bookings are still pending.",
-                tip: "Prioritize your 'Must-Have' activities now."
+                message: "Budget saturation at 85%. Future luxury experiences may require re-allocation.",
+                tip: "Check if 'Activities' can be optimized for value."
             }
         }
         return {
@@ -104,12 +116,20 @@ export function BudgetDashboard({
                         <p className="text-xs text-white/40 mt-1">SafarAI Intelligent Tracking</p>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="p-2 hover:bg-white/5 rounded-full transition-colors"
-                >
-                    {isExpanded ? <ChevronUp className="size-5 text-white/40" /> : <ChevronDown className="size-5 text-white/40" />}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsEditing(!isEditing)}
+                        className="text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white/60"
+                    >
+                        {isEditing ? "Cancel" : "Edit Budget"}
+                    </button>
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="p-2 hover:bg-white/5 rounded-full transition-colors"
+                    >
+                        {isExpanded ? <ChevronUp className="size-5 text-white/40" /> : <ChevronDown className="size-5 text-white/40" />}
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -132,7 +152,7 @@ export function BudgetDashboard({
                         {categories.map((cat, i) => {
                             const radius = 110 - i * 18
                             const circum = 2 * Math.PI * radius
-                            const perc = Math.min((cat.value / totalBudget) * 100, 100)
+                            const perc = Math.min((cat.value / tempBudget) * 100, 100)
                             const offset = circum - (perc / 100) * circum
 
                             return (
@@ -147,7 +167,7 @@ export function BudgetDashboard({
                                     strokeDasharray={circum}
                                     initial={{ strokeDashoffset: circum }}
                                     animate={{ strokeDashoffset: offset }}
-                                    transition={{ duration: 1.5, ease: "easeOut", delay: i * 0.1 }}
+                                    transition={{ duration: 0.8, ease: "easeOut" }}
                                     strokeLinecap="round"
                                 />
                             )
@@ -158,15 +178,27 @@ export function BudgetDashboard({
                         <div className="text-3xl font-bold text-white">
                             {currency} {totalSpent.toLocaleString()}
                         </div>
-                        <div className="text-[10px] text-white/40 uppercase tracking-[0.2em] mt-1">
-                            Spent / {currency} {totalBudget.toLocaleString()}
-                        </div>
+                        {isEditing ? (
+                            <div className="mt-2">
+                                <span className="text-[10px] text-white/40 uppercase tracking-widest">Limit:</span>
+                                <input
+                                    type="number"
+                                    value={tempBudget}
+                                    onChange={(e) => setTempBudget(parseInt(e.target.value) || 0)}
+                                    className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-xs text-emerald-400 w-20 focus:outline-none focus:border-emerald-500/50"
+                                />
+                            </div>
+                        ) : (
+                            <div className="text-[10px] text-white/40 uppercase tracking-[0.2em] mt-1">
+                                Spent / {currency} {tempBudget.toLocaleString()}
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Details Section */}
                 <div className="space-y-6">
-                    <AnimatePresence>
+                    <AnimatePresence mode="popLayout">
                         {isExpanded && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
@@ -181,15 +213,23 @@ export function BudgetDashboard({
                                                 <cat.icon className="size-3 text-white/40 group-hover:text-white transition-colors" />
                                                 <span className="text-xs text-white/60 font-medium">{cat.label}</span>
                                             </div>
-                                            <span className="text-xs font-mono text-white/80">
-                                                {currency} {cat.value.toLocaleString()}
-                                            </span>
+                                            {isEditing ? (
+                                                <input
+                                                    type="number"
+                                                    value={cat.value}
+                                                    onChange={(e) => handleCategoryChange(cat.id, e.target.value)}
+                                                    className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-xs text-white text-right w-24 focus:outline-none focus:border-white/20"
+                                                />
+                                            ) : (
+                                                <span className="text-xs font-mono text-white/80">
+                                                    {currency} {cat.value.toLocaleString()}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
-                                                animate={{ width: `${Math.min((cat.value / totalBudget) * 100, 100)}%` }}
-                                                transition={{ duration: 1, delay: 0.5 }}
+                                                animate={{ width: `${Math.min((cat.value / tempBudget) * 100, 100)}%` }}
                                                 className="h-full rounded-full"
                                                 style={{ backgroundColor: cat.color }}
                                             />
@@ -201,12 +241,14 @@ export function BudgetDashboard({
                     </AnimatePresence>
 
                     {/* AI Logic Alert */}
-                    <div className={cn(
-                        "p-4 rounded-2xl border flex gap-4",
-                        reco.type === 'warning' ? "bg-red-500/10 border-red-500/20" :
-                            reco.type === 'caution' ? "bg-yellow-500/10 border-yellow-500/20" :
-                                "bg-emerald-500/10 border-emerald-500/20"
-                    )}>
+                    <motion.div
+                        layout
+                        className={cn(
+                            "p-4 rounded-2xl border flex gap-4",
+                            reco.type === 'warning' ? "bg-red-500/10 border-red-500/20" :
+                                reco.type === 'caution' ? "bg-yellow-500/10 border-yellow-500/20" :
+                                    "bg-emerald-500/10 border-emerald-500/20"
+                        )}>
                         <div className={cn(
                             "p-2 rounded-xl h-fit",
                             reco.type === 'warning' ? "bg-red-500/20 text-red-400" :
@@ -219,15 +261,18 @@ export function BudgetDashboard({
                             <p className="text-xs text-white font-medium mb-1">{reco.message}</p>
                             <p className="text-[10px] text-white/40 italic leading-tight">TIP: {reco.tip}</p>
                         </div>
-                    </div>
+                    </motion.div>
 
                     <Button
-                        variant="outline"
+                        variant={isEditing ? "default" : "outline"}
                         size="sm"
-                        className="w-full border-white/10 hover:bg-white/5 text-white/60 hover:text-white"
-                        onClick={() => onSave?.(spentCategories)}
+                        className={cn(
+                            "w-full rounded-xl transition-all font-bold",
+                            isEditing ? "bg-emerald-500 text-white hover:bg-emerald-600" : "border-white/10 hover:bg-white/5 text-white/60 hover:text-white"
+                        )}
+                        onClick={handleSave}
                     >
-                        Sync with Trip Ledger
+                        {isEditing ? "Save & Sync Ledger" : "Sync with Live Bookings"}
                     </Button>
                 </div>
             </div>
