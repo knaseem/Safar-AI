@@ -131,7 +131,7 @@ export function Navbar() {
                             </Button>
                         )}
                         <Button variant="premium" size="sm" onClick={() => setIsVibeCheckOpen(true)} className="!bg-white !text-black font-bold hover:!bg-gray-100">
-                            Plan My Trip
+                            Find My Travel Vibe
                         </Button>
                     </div>
                 </div>

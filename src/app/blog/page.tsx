@@ -6,7 +6,7 @@ import { Sparkles, Clock, ArrowRight, Grid3X3, LayoutList } from "lucide-react"
 import { blogPosts, getDailyFeaturedPosts } from "@/lib/blog-data"
 import { Navbar } from "@/components/layout/navbar"
 
-const categories = ["All", "Destinations", "Food & Dining", "Luxury & Lifestyle", "Travel Tips"] as const
+const categories = ["All", "Destinations", "Food & Dining", "Luxury & Lifestyle", "Travel Tips", "Halal Trip"] as const
 type Category = typeof categories[number]
 
 export default function BlogPage() {
@@ -55,8 +55,8 @@ export default function BlogPage() {
                                     key={category}
                                     onClick={() => setSelectedCategory(category)}
                                     className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${selectedCategory === category
-                                            ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                                            : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                                        ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
+                                        : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                                         }`}
                                 >
                                     <span>{category}</span>

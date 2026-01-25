@@ -19,6 +19,23 @@ const placeholderSuggestions = [
     "Beach vacation in Maldives",
 ]
 
+const halalPlaceholderSuggestions = [
+    "Umrah trip to Mecca, Saudi Arabia",
+    "Luxury Umrah package with Medina visit, 5-star hotels",
+    "Islamic heritage tour in Mecca",
+    "Islamic heritage tour in Medina",
+    "Family trip to Malaysia, alcohol-free hotels",
+    "Halal foodie tour in Osaka, prayer-friendly itinerary",
+    "Relaxing week in Maldives, private villa",
+    "Islamic heritage tour in Andalusia (Cordoba & Granada)",
+    "Winter break in Qatar, family activities",
+    "Ottoman history tour in Istanbul and Bursa",
+    "Halal-friendly nature retreat in Bosnia & Herzegovina",
+    "Luxury shopping and desert safari in Dubai",
+    "Zanzibar beach holiday, halal food resorts",
+    "Scenic train trip in Switzerland, halal dining options",
+]
+
 interface HeroProps {
     initialPrompt?: string;
 }
@@ -86,6 +103,49 @@ const HERO_IMAGES = [
     }
 ]
 
+const HALAL_HERO_IMAGES = [
+    {
+        url: "/images/ai-hero/mecca-hero-real.png", // Generated AI Image (Ultra Realistic Kaaba)
+        location: "Mecca, Saudi Arabia",
+        credit: "SafarAI Imagination"
+    },
+    {
+        url: "/images/ai-hero/medina-hero-front.png", // Generated AI Image (Masjid Nabawi Front)
+        location: "Medina, Saudi Arabia",
+        credit: "SafarAI Imagination"
+    },
+    {
+        url: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=2600&auto=format&fit=crop", // Istanbul (Verified Unsplash)
+        location: "Istanbul, Turkey",
+        credit: "Unsplash"
+    },
+    {
+        url: "https://images.pexels.com/photos/3566139/pexels-photo-3566139.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", // Alhambra (Verified Pexels)
+        location: "Granada, Spain",
+        credit: "Pexels"
+    },
+    {
+        url: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?q=80&w=2274&auto=format&fit=crop", // Kuala Lumpur (Unsplash safe fallback)
+        location: "Kuala Lumpur, Malaysia",
+        credit: "Unsplash"
+    },
+    {
+        url: "/images/ai-hero/dubai-hero.png", // Generated AI Image (Sci-fi Future)
+        location: "Dubai, UAE",
+        credit: "SafarAI Imagination"
+    },
+    {
+        url: "/images/ai-hero/zanzibar-hero.png", // Generated AI Image (Tropical Paradise)
+        location: "Zanzibar, Tanzania",
+        credit: "SafarAI Imagination"
+    },
+    {
+        url: "/images/ai-hero/doha-hero.png", // Generated AI Image (Cyberpunk West Bay)
+        location: "Doha, Qatar",
+        credit: "SafarAI Imagination"
+    }
+]
+
 export function Hero({ initialPrompt }: HeroProps) {
     const [isHalal, setIsHalal] = useState(false)
     const [input, setInput] = useState("")
@@ -110,18 +170,27 @@ export function Hero({ initialPrompt }: HeroProps) {
     // Rotate placeholder every 2 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            setPlaceholderIndex((prev) => (prev + 1) % placeholderSuggestions.length)
+            const list = isHalal ? halalPlaceholderSuggestions : placeholderSuggestions
+            setPlaceholderIndex((prev) => (prev + 1) % list.length)
         }, 2000)
         return () => clearInterval(interval)
-    }, [])
+    }, [isHalal])
 
     // Rotate Hero Image every 5 seconds (Faster Pace)
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentImageIndex((prev) => (prev + 1) % HERO_IMAGES.length)
+            const list = isHalal ? HALAL_HERO_IMAGES : HERO_IMAGES
+            setCurrentImageIndex((prev) => (prev + 1) % list.length)
         }, 5000)
         return () => clearInterval(interval)
-    }, [])
+    }, [isHalal])
+
+    // Reset index when mode toggles to avoid out of bounds
+    useEffect(() => {
+        setCurrentImageIndex(0)
+    }, [isHalal])
+
+    const activeImages = isHalal ? HALAL_HERO_IMAGES : HERO_IMAGES
 
     const handlePlanTrip = async () => {
         if (!input.trim()) return
@@ -161,7 +230,7 @@ export function Hero({ initialPrompt }: HeroProps) {
             <section className="relative min-h-screen py-24 flex items-center justify-center bg-black/90">
                 <div className="absolute inset-0 z-0">
                     <img
-                        src={HERO_IMAGES[currentImageIndex].url}
+                        src={activeImages[currentImageIndex].url}
                         alt="Background"
                         className="w-full h-full object-cover opacity-20 blur-sm"
                     />
@@ -188,23 +257,23 @@ export function Hero({ initialPrompt }: HeroProps) {
                     >
                         {/* Ken Burns Scale Effect */}
                         <motion.img
-                            src={HERO_IMAGES[currentImageIndex].url}
-                            alt={HERO_IMAGES[currentImageIndex].location}
+                            src={activeImages[currentImageIndex].url}
+                            alt={activeImages[currentImageIndex].location}
                             initial={{ scale: 1.05 }}
                             animate={{ scale: 1.15 }}
                             transition={{ duration: 12, ease: "linear" }}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                                 // Fallback or skip to next
-                                console.error("Image failed:", HERO_IMAGES[currentImageIndex].url)
+                                console.error("Image failed:", activeImages[currentImageIndex].url)
                                 e.currentTarget.style.display = 'none'
                             }}
                         />
                         {/* Location Credit Overlay */}
                         <div className="absolute bottom-6 right-8 z-20 flex flex-col items-end text-white/50 text-right">
                             <span className="text-xs uppercase tracking-[0.2em] font-light border-b border-white/20 pb-1 mb-1">Location</span>
-                            <span className="text-sm font-medium text-white/90">{HERO_IMAGES[currentImageIndex].location}</span>
-                            <span className="text-[10px] text-white/30">Photo by {HERO_IMAGES[currentImageIndex].credit}</span>
+                            <span className="text-sm font-medium text-white/90">{activeImages[currentImageIndex].location}</span>
+                            <span className="text-[10px] text-white/30">Photo by {activeImages[currentImageIndex].credit}</span>
                         </div>
                     </motion.div>
                 </AnimatePresence>
@@ -263,7 +332,7 @@ export function Hero({ initialPrompt }: HeroProps) {
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handlePlanTrip()}
                                     disabled={loading}
-                                    placeholder={placeholderSuggestions[placeholderIndex]}
+                                    placeholder={(isHalal ? halalPlaceholderSuggestions : placeholderSuggestions)[placeholderIndex % (isHalal ? halalPlaceholderSuggestions : placeholderSuggestions).length]}
                                     className="flex-1 bg-transparent border-0 outline-none text-white placeholder:text-white/50 text-lg py-3"
                                     suppressHydrationWarning
                                 />

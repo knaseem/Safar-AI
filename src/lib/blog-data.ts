@@ -2,7 +2,7 @@ export interface BlogPost {
     slug: string
     title: string
     excerpt: string
-    category: "Destinations" | "Travel Tips" | "Luxury & Lifestyle" | "Halal Travel" | "Food & Dining"
+    category: "Destinations" | "Travel Tips" | "Luxury & Lifestyle" | "Halal Travel" | "Food & Dining" | "Halal Trip"
     image: string
     readTime: string
     date: string
@@ -623,6 +623,144 @@ export const blogPosts: BlogPost[] = [
         image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop",
         readTime: "10 min",
         date: "2024-12-21"
+    },
+
+    // HALAL TRIP (New Batch - User Request)
+    {
+        slug: "detailed-umrah-guide-2026",
+        title: "The Ultimate Step-by-Step Umrah Guide (2026 Edition)",
+        excerpt: "A comprehensive manual for performing Umrah: from Ihram to Tawaf, Sa'i, and Halq. Includes duas, maps, and practical tips.",
+        category: "Halal Trip",
+        image: "/images/ai-hero/mecca-hero-real.png", // Use our new AI Ultra Realistic image
+        readTime: "25 min",
+        date: "2026-01-25",
+        featured: true
+    },
+    {
+        slug: "halal-food-osaka-kyoto",
+        title: "Halal Japan: Eating Your Way Through Osaka & Kyoto",
+        excerpt: "Discover specific Muslim-friendly restaurants serving authentic Ramen, Yakiniku, and Okonomiyaki.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop",
+        readTime: "12 min",
+        date: "2026-01-24"
+    },
+    {
+        slug: "cordoba-granada-islamic-history",
+        title: "Andalusia's Islamic Heritage: A Road Trip",
+        excerpt: "Tracing the legacy of Al-Andalus from the Great Mosque of Cordoba to the Alhambra of Granada.",
+        category: "Halal Trip",
+        image: "https://images.pexels.com/photos/3566139/pexels-photo-3566139.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+        readTime: "15 min",
+        date: "2026-01-23"
+    },
+    {
+        slug: "bosnia-herzegovina-halal-gem",
+        title: "Bosnia & Herzegovina: Europe's Hidden Halal Gem",
+        excerpt: "Mosques, mountains, and Ottoman bridges. Why this Balkan nation feels like home for Muslim travelers.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1565022067761-e1cb8d9dbdf5?q=80&w=2070&auto=format&fit=crop",
+        readTime: "10 min",
+        date: "2026-01-22"
+    },
+    {
+        slug: "istanbul-mosques-guide",
+        title: "Beyond the Blue Mosque: Istanbul's Spiritual Sites",
+        excerpt: "Exploring the Suleymaniye, Eyup Sultan, and lesser-known historical masjids in Istanbul.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=2600&auto=format&fit=crop",
+        readTime: "11 min",
+        date: "2026-01-21"
+    },
+    {
+        slug: "seoul-muslim-friendly",
+        title: "Seoul for the Muslim Traveler",
+        excerpt: "Prayer rooms in Itaewon, halal K-beauty, and navigating South Korea with ease.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1517154421773-052f83b3f103?q=80&w=2070&auto=format&fit=crop",
+        readTime: "9 min",
+        date: "2026-01-20"
+    },
+    {
+        slug: "morocco-family-halal-trip",
+        title: "Family Friendly Morocco: A Halal Vacation",
+        excerpt: "Safe, welcoming, and culturally rich. The perfect itinerary for families with kids.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2026-01-19"
+    },
+    {
+        slug: "qatar-winter-stopover",
+        title: "48 Hours in Doha: The Perfect Layover",
+        excerpt: "From Souq Waqif to the Museum of Islamic Art. How to maximize a short stay in Qatar.",
+        category: "Halal Trip",
+        image: "/images/ai-hero/doha-hero.png",
+        readTime: "7 min",
+        date: "2026-01-18"
+    },
+    {
+        slug: "zanzibar-halal-honeymoon",
+        title: "Zanzibar: The Ultimate Halal Honeymoon",
+        excerpt: "Private pool villas, modest swimwear friendly beaches, and sunset dhow cruises.",
+        category: "Halal Trip",
+        image: "/images/ai-hero/zanzibar-hero.png",
+        readTime: "10 min",
+        date: "2026-01-17"
+    },
+    {
+        slug: "uzbekistan-silk-road-pilgrimage",
+        title: "Uzbekistan: A Journey Through the Silk Road",
+        excerpt: "Samarkand, Bukhara, and Khiva. Walking in the footsteps of Imam Bukhari and Islamic scholars.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1528659857999-7389add34f40?q=80&w=2070&auto=format&fit=crop",
+        readTime: "14 min",
+        date: "2026-01-16"
+    },
+    {
+        slug: "halal-food-london-guide",
+        title: "London's Halal Food Scene: 2026 Update",
+        excerpt: "The best halal burgers, steaks, and afternoon tea spots in the UK capital.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070&auto=format&fit=crop",
+        readTime: "8 min",
+        date: "2026-01-15"
+    },
+    {
+        slug: "cape-town-muslim-history",
+        title: "Cape Town's Rich Muslim Heritage",
+        excerpt: "Bo-Kaap, kramats, and the vibrant culture of Cape Malay Muslims.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1576485290814-1c72aa4bbb8e?q=80&w=2070&auto=format&fit=crop",
+        readTime: "9 min",
+        date: "2026-01-14"
+    },
+    {
+        slug: "maldives-halal-resorts",
+        title: "Top 5 Alcohol-Free Resorts in Maldives",
+        excerpt: "Complete privacy and peace of mind at these fully halal-compliant island retreats.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1544983088-75c60f2bbab6?q=80&w=2070&auto=format&fit=crop",
+        readTime: "7 min",
+        date: "2026-01-13"
+    },
+    {
+        slug: "singapore-arab-street",
+        title: "Kampong Glam: Singapore's Middle Eastern Hub",
+        excerpt: "Shopping for perfumes, eating Murtabak, and visiting the majestic Sultan Mosque.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1565967511849-76a60a516170?q=80&w=2071&auto=format&fit=crop",
+        readTime: "6 min",
+        date: "2026-01-12"
+    },
+    {
+        slug: "cairo-islamic-architecture",
+        title: "Cairo: The City of a Thousand Minarets",
+        excerpt: "A walking tour through Khan el-Khalili and the historic mosques of Old Cairo.",
+        category: "Halal Trip",
+        image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=2071&auto=format&fit=crop",
+        readTime: "11 min",
+        date: "2026-01-11"
     }
 ]
 
