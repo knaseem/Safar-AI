@@ -7,10 +7,11 @@ import { Navbar } from "@/components/layout/navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { BookingRequest } from "@/types/booking"
-import { Loader2, Plane, Calendar, MapPin, User as UserIcon, X, Sparkles } from "lucide-react"
+import { Loader2, Plane, Calendar, MapPin, User as UserIcon, X, Sparkles, Trash2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { PassportCard } from "@/components/features/passport-card"
 import { VibeCheck } from "@/components/features/vibe-check"
+import { toast } from "sonner"
 
 export default function ProfilePage() {
     const router = useRouter()
@@ -67,6 +68,25 @@ export default function ProfilePage() {
         fetchData()
     }, [router])
 
+    const handleDeleteTrip = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (!confirm("Are you sure you want to delete this itinerary?")) return
+
+        try {
+            const res = await fetch(`/api/trips?id=${id}`, {
+                method: "DELETE"
+            })
+
+            if (res.ok) {
+                setSavedTrips(prev => prev.filter(t => t.id !== id))
+                toast.success("Itinerary Deleted")
+            } else {
+                toast.error("Failed to delete itinerary")
+            }
+        } catch (err) {
+            toast.error("An error occurred")
+        }
+    }
 
 
     if (loading) {
@@ -241,11 +261,20 @@ export default function ProfilePage() {
                                                     <span className="text-xs text-white/40">
                                                         {new Date(trip.created_at).toLocaleDateString()}
                                                     </span>
-                                                    {trip.is_halal && (
-                                                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium uppercase tracking-wider border border-emerald-500/20">
-                                                            Halal
-                                                        </span>
-                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        {trip.is_halal && (
+                                                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium uppercase tracking-wider border border-emerald-500/20">
+                                                                Halal
+                                                            </span>
+                                                        )}
+                                                        <button
+                                                            onClick={(e) => handleDeleteTrip(trip.id, e)}
+                                                            className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                                                            title="Delete Itinerary"
+                                                        >
+                                                            <Trash2 className="size-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <Button
                                                     variant="outline"
