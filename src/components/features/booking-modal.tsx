@@ -143,6 +143,14 @@ export function BookingModal({ tripName, days, isOpen, onClose }: BookingModalPr
                                 Book Now - ${estimatedPrice.toLocaleString()}
                             </Button>
                             <p className="text-center text-white/30 text-xs mt-4">Demo mode. No real charges.</p>
+
+                            {/* Legal Disclaimer */}
+                            <div className="mt-8 pt-8 border-t border-white/5">
+                                <p className="text-[10px] text-white/20 leading-relaxed italic">
+                                    <span className="text-white/40 font-bold uppercase mr-1">Disclaimer:</span>
+                                    SafarAI is an AI-powered travel planning tool. All pricing, availability, and itinerary details are generated for informational purposes and may change based on dynamic third-party data. SafarAI does not process payments or manage bookings directly. All final bookings are completed on third-party provider websites. SafarAI is not liable for booking errors, pricing discrepancies, cancellations, or travel disruptions occurring on external platforms. We recommend verifying all details with the provider before finalizing your purchase.
+                                </p>
+                            </div>
                         </div>
                     )}
 

@@ -79,8 +79,8 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                         <div className="p-8 max-h-[70vh] overflow-y-auto space-y-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                             {/* Status Banner */}
                             <div className={`p-4 rounded-xl border flex flex-col gap-3 ${booking.status === 'pending' ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-500' :
-                                    booking.status === 'booked' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-500' :
-                                        'bg-white/5 border-white/10 text-white/60'
+                                booking.status === 'booked' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-500' :
+                                    'bg-white/5 border-white/10 text-white/60'
                                 }`}>
                                 <div className="flex items-center gap-3">
                                     {booking.status === 'booked' ? <CheckCircle2 className="size-5" /> : <Info className="size-5" />}
@@ -209,6 +209,14 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                                     <p className="text-[10px] text-emerald-400/60 uppercase tracking-widest mb-1 font-bold">Verified Pricing</p>
                                     <p className="text-white/40 text-xs">AI-Optimized Rate</p>
                                 </div>
+                            </div>
+
+                            {/* Legal Disclaimer */}
+                            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                <p className="text-[10px] text-white/30 leading-relaxed italic">
+                                    <span className="text-white/50 font-bold uppercase mr-1">Disclaimer:</span>
+                                    SafarAI is an AI-powered travel planning tool. All pricing, availability, and itinerary details are generated for informational purposes and may change based on dynamic third-party data. SafarAI does not process payments or manage bookings directly. All final bookings are completed on third-party provider websites. SafarAI is not liable for booking errors, pricing discrepancies, cancellations, or travel disruptions occurring on external platforms. We recommend verifying all details with the provider before finalizing your purchase.
+                                </p>
                             </div>
                         </div>
 
