@@ -66,7 +66,9 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
     const estimatedPrice = Math.round(baseFlightPrice + baseHotelPrice + insurancePrice)
 
     // Extract destination from trip
-    const destination = tripData.days[0]?.theme?.split(' ').slice(-1)[0] || 'Destination'
+    const destination = tripData.trip_name?.split(':')[0]?.split(' ').slice(0, 2).join(' ') ||
+        tripData.days[0]?.theme?.split(' ').slice(0, 1)[0] ||
+        'Destination'
 
     // Validation
     const isStep1Valid = checkIn && checkOut && departureAirport
