@@ -1,14 +1,27 @@
 import Amadeus from 'amadeus';
 
-// Create a singleton instance of the Amadeus client
-// We use the TEST environment by default to protect the user
-const amadeus = new Amadeus({
-    clientId: process.env.AMADEUS_CLIENT_ID || '',
-    clientSecret: process.env.AMADEUS_CLIENT_SECRET || '',
-    hostname: 'test' // Change to 'production' when keys are ready
-});
+let amadeusInstance: Amadeus | null = null;
 
-export default amadeus;
+export function getAmadeus() {
+    if (!amadeusInstance) {
+        const clientId = process.env.AMADEUS_CLIENT_ID;
+        const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
+
+        if (!clientId || !clientSecret) {
+            console.warn('Amadeus API keys missing. Intelligence features will be limited.');
+            return null;
+        }
+
+        amadeusInstance = new Amadeus({
+            clientId,
+            clientSecret,
+            hostname: 'test' // Change to 'production' when keys are ready
+        });
+    }
+    return amadeusInstance;
+}
+
+export default getAmadeus;
 
 /**
  * Interface for Location Score data from Amadeus
@@ -24,6 +37,9 @@ export interface AmadeusLocationScore {
  * Fetch safety and vibe intelligence for a set of coordinates
  */
 export async function fetchLocationIntelligence(lat: number, lng: number) {
+    const amadeus = getAmadeus();
+    if (!amadeus) return { scores: null, safety: null };
+
     try {
         // 1. Fetch Location Scores (Neighborhood Vibes)
         const locationResponse = await amadeus.location.analytics.categoryRatedAreas.get({
@@ -51,6 +67,9 @@ export async function fetchLocationIntelligence(lat: number, lng: number) {
  * Fetch sentiment analysis for a hotel
  */
 export async function fetchHotelSentiment(hotelIds: string[]) {
+    const amadeus = getAmadeus();
+    if (!amadeus) return [];
+
     try {
         const response = await (amadeus as any).ereputation.hotelSentiments.get({
             hotelIds: hotelIds.join(',')
