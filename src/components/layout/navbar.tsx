@@ -67,6 +67,7 @@ export function Navbar() {
                         <Link href="#membership" className="hover:text-white transition-colors">Membership</Link>
                         <Link href="/budget" className="hover:text-white transition-colors">Budget</Link>
                         <Link href="/world" className="hover:text-white transition-colors">World</Link>
+                        <Link href="/trends" className="hover:text-amber-400 transition-colors">Trends</Link>
                         <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
                     </nav>
 
@@ -117,6 +118,9 @@ export function Navbar() {
                                                     </Link>
                                                     <Link href="/budget" onClick={() => setIsUserMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
                                                         Budget
+                                                    </Link>
+                                                    <Link href="/trends" onClick={() => setIsUserMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+                                                        Trends
                                                     </Link>
                                                     <Link href="/blog" onClick={() => setIsUserMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
                                                         Blog
