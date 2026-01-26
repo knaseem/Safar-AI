@@ -84,8 +84,10 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, search
     const estimatedPrice = Math.round((liveFlightPrice || baseFlightPrice) + baseHotelPrice + insurancePrice)
 
     // Extract destination from trip, with search context fallback
-    const destinationRaw = searchQuery || tripData.trip_name?.split(':')[0] || 'Destination'
-    const destination = destinationRaw.split(' ').slice(0, 3).join(' ')
+    // Extract destination from trip data, preferring the first day's location/theme
+    // This is more reliable than trip_name which might be "Anniversary Trip"
+    const destinationRaw = tripData.days[0]?.theme || tripData.trip_name || searchQuery || 'Destination'
+    const destination = extractCleanCity(destinationRaw)
 
     // Validation
     const isStep1Valid = checkIn && checkOut && departureAirport
