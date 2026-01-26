@@ -6,6 +6,7 @@ export function getAmadeus() {
     if (!amadeusInstance) {
         const clientId = process.env.AMADEUS_CLIENT_ID;
         const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
+        const hostname = process.env.AMADEUS_HOSTNAME || 'test';
 
         if (!clientId || !clientSecret) {
             console.warn('Amadeus API keys missing. Intelligence features will be limited.');
@@ -15,7 +16,7 @@ export function getAmadeus() {
         amadeusInstance = new Amadeus({
             clientId,
             clientSecret,
-            hostname: 'test' // Change to 'production' when keys are ready
+            hostname: hostname as 'test' | 'production'
         });
     }
     return amadeusInstance;
@@ -77,6 +78,74 @@ export async function fetchHotelSentiment(hotelIds: string[]) {
         return response.data || [];
     } catch (error) {
         console.error('Amadeus Sentiment Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Search for flights
+ */
+export async function searchFlights(params: {
+    originLocationCode: string;
+    destinationLocationCode: string;
+    departureDate: string;
+    returnDate?: string;
+    adults: number;
+    max?: number;
+}) {
+    const amadeus = getAmadeus();
+    if (!amadeus) return [];
+
+    try {
+        const response = await (amadeus as any).shopping.flightOffersSearch.get(params);
+        return response.data || [];
+    } catch (error) {
+        console.error('Amadeus Flight Search Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Search for hotels in a city
+ */
+export async function searchHotels(params: {
+    cityCode: string;
+    radius?: number;
+    radiusUnit?: string;
+    hotelSource?: string;
+}) {
+    const amadeus = getAmadeus();
+    if (!amadeus) return [];
+
+    try {
+        const response = await (amadeus as any).referenceData.locations.hotels.byCity.get(params);
+        return response.data || [];
+    } catch (error) {
+        console.error('Amadeus Hotel Search Error:', error);
+        return [];
+    }
+}
+
+/**
+ * Get hotel offers for specific hotels
+ */
+export async function getHotelOffers(params: {
+    hotelIds: string;
+    adults: number;
+    checkInDate: string;
+    checkOutDate: string;
+    roomQuantity?: number;
+    priceRange?: string;
+    currency?: string;
+}) {
+    const amadeus = getAmadeus();
+    if (!amadeus) return [];
+
+    try {
+        const response = await (amadeus as any).shopping.hotelOffersSearch.get(params);
+        return response.data || [];
+    } catch (error) {
+        console.error('Amadeus Hotel Offers Error:', error);
         return [];
     }
 }

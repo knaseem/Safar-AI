@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 import { X, Heart, Sparkles, Plane, ChevronLeft, ChevronRight, Wand2, Fingerprint } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassportCard } from "./passport-card"
+import { TravelDeals } from "./travel-deals"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 
@@ -167,6 +168,7 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
     const [complete, setComplete] = useState(false)
     const [direction, setDirection] = useState(0)
     const [saving, setSaving] = useState(false)
+    const [showDeals, setShowDeals] = useState(false)
 
     const [scores, setScores] = useState<Record<string, number>>({
         Adventure: 0,
@@ -226,6 +228,7 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
         setComplete(false)
         setDirection(0)
         setShowIntro(true)
+        setShowDeals(false)
         x.set(0)
         setScores({ Adventure: 0, Luxury: 0, Culture: 0, Relaxation: 0, Foodie: 0 })
     }
@@ -262,7 +265,7 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
             if (error) throw error
 
             toast.success("Travel DNA Saved", { description: `You are a ${finalArchetype}!`, duration: 3000 })
-            onClose()
+            setShowDeals(true)
         } catch (err) {
             console.error(err)
             toast.error("Failed to save", { description: "Please try again." })
@@ -409,7 +412,7 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
                     )}
 
                     {/* Completion Screen: PASSPORT UI */}
-                    {complete && (
+                    {complete && !showDeals && (
                         <PassportCard
                             archetype={getArchetype()}
                             scores={scores}
@@ -429,6 +432,34 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
                                 </>
                             }
                         />
+                    )}
+
+                    {/* Live Deals Screen */}
+                    {showDeals && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-neutral-900/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[80vh] scrollbar-hide"
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-white mb-1">Passport Verified</h2>
+                                    <p className="text-white/40 text-xs uppercase tracking-widest">Locked onto {getArchetype()} market</p>
+                                </div>
+                                <div className="size-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                    <Sparkles className="size-6 text-emerald-400" />
+                                </div>
+                            </div>
+
+                            <TravelDeals archetype={getArchetype()} />
+
+                            <button
+                                onClick={onClose}
+                                className="w-full mt-6 text-center text-xs text-white/30 hover:text-white transition-colors"
+                            >
+                                Continue to Dashboard
+                            </button>
+                        </motion.div>
                     )}
                 </div>
             </motion.div>
