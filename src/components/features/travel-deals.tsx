@@ -141,31 +141,37 @@ export function TravelDeals({ archetype }: TravelDealsProps) {
                         <Hotel className="size-3" />
                         <span>Top Accommodations</span>
                     </div>
-                    {displayHotels.map((hotel, idx) => (
-                        <motion.div
-                            key={hotel.hotel.hotelId || idx}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 + idx * 0.1 }}
-                            className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between group hover:bg-white/10 transition-colors"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="size-10 rounded-full bg-cyan-500/10 flex items-center justify-center">
-                                    <Hotel className="size-5 text-cyan-500" />
+                    {displayHotels.map((hotel: any, idx) => {
+                        const hotelName = hotel.hotel?.name || hotel.name || "Premium Stay";
+                        const hotelId = hotel.hotel?.hotelId || hotel.hotelId || `hotel-${idx}`;
+                        const price = hotel.offers?.[0]?.price?.total || "850";
+
+                        return (
+                            <motion.div
+                                key={hotelId}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 + idx * 0.1 }}
+                                className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between group hover:bg-white/10 transition-colors"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="size-10 rounded-full bg-cyan-500/10 flex items-center justify-center">
+                                        <Hotel className="size-5 text-cyan-500" />
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-bold text-white">{hotelName}</div>
+                                        <div className="text-[10px] text-white/40 uppercase">Recommended Stay</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-sm font-bold text-white">{hotel.hotel.name}</div>
-                                    <div className="text-[10px] text-white/40 uppercase">Recommended Stay</div>
+                                <div className="text-right">
+                                    <div className="text-lg font-bold text-cyan-400">${price}</div>
+                                    <Button size="sm" variant="ghost" className="h-7 text-[10px] px-2 text-white/60 group-hover:text-white group-hover:bg-cyan-500/20">
+                                        Book Now <ExternalLink className="size-3 ml-1" />
+                                    </Button>
                                 </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-lg font-bold text-cyan-400">${hotel.offers?.[0]?.price?.total || "850"}</div>
-                                <Button size="sm" variant="ghost" className="h-7 text-[10px] px-2 text-white/60 group-hover:text-white group-hover:bg-cyan-500/20">
-                                    Book Now <ExternalLink className="size-3 ml-1" />
-                                </Button>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
 
