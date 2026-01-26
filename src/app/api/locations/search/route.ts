@@ -11,6 +11,10 @@ export async function GET(request: NextRequest) {
 
     try {
         const locations = await searchLocations(keyword);
+        console.log('Amadeus locations for:', keyword, locations.length, 'results');
+        if (locations.length > 0) {
+            console.log('First result:', JSON.stringify(locations[0], null, 2));
+        }
         return NextResponse.json({ data: locations });
     } catch (error) {
         console.error('Location Search Route Error:', error);

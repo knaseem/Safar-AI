@@ -293,11 +293,15 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
             const data = await res.json()
             if (data.data && data.data.length > 0) {
                 const first = data.data[0]
-                setResolvedDestination({
-                    code: first.iataCode || first.address.cityCode,
-                    name: first.name || first.address.cityName
-                })
-                setShowDeals(true)
+                const name = first.name || (first.address ? (first.address.cityName || first.address.cityCode) : 'Selected City')
+                const code = first.iataCode || (first.address ? first.address.cityCode : first.iataCode)
+
+                if (code) {
+                    setResolvedDestination({ code, name })
+                    setShowDeals(true)
+                } else {
+                    toast.error("Invalid city data", { description: "Try a different search." })
+                }
             } else {
                 toast.error("City not found", { description: "Try a larger city or check spelling." })
             }

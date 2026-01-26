@@ -159,7 +159,7 @@ export async function searchLocations(keyword: string) {
     try {
         const response = await (amadeus as any).referenceData.locations.get({
             keyword,
-            subType: 'CITY,AIRPORT'
+            subType: ['CITY', 'AIRPORT']
         });
         return response.data || [];
     } catch (error) {
