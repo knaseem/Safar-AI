@@ -447,7 +447,7 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
                     )}
 
                     {/* Completion Screen: PASSPORT UI */}
-                    {complete && !showDeals && (
+                    {complete && !showPivot && !showDeals && (
                         <PassportCard
                             archetype={getArchetype()}
                             scores={scores}
