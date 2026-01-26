@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion"
-import { X, Heart, Sparkles, Plane, ChevronLeft, ChevronRight, Wand2, Fingerprint, MapPin, ArrowRight, Loader2 } from "lucide-react"
+import { X, Heart, Sparkles, Plane, ChevronLeft, ChevronRight, Wand2, Fingerprint, MapPin, ArrowRight, Loader2, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassportCard } from "./passport-card"
 import { TravelDeals } from "./travel-deals"
@@ -164,6 +165,9 @@ interface VibeCheckProps {
 }
 
 export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
+    useEffect(() => {
+        if (isOpen) console.log("--- SafarAI VibeCheck Gateway: V4.1 STABLE ---");
+    }, [isOpen]);
     const [showIntro, setShowIntro] = useState(true)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [complete, setComplete] = useState(false)
@@ -175,6 +179,10 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
     const [pivotSelection, setPivotSelection] = useState<"surprise" | "search" | null>(null)
     const [resolvedDestination, setResolvedDestination] = useState<{ code: string; name: string } | null>(null)
     const [isSearching, setIsSearching] = useState(false)
+    const [isBaking, setIsBaking] = useState(false)
+    const [originCity, setOriginCity] = useState("Charlotte")
+    const [originCityCode, setOriginCityCode] = useState("CLT")
+    const [isHalal, setIsHalal] = useState(false)
 
     const [scores, setScores] = useState<Record<string, number>>({
         Adventure: 0,
@@ -184,6 +192,7 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
         Foodie: 0
     })
 
+    const router = useRouter()
     const supabase = createClient()
     const x = useMotionValue(0)
     const rotate = useTransform(x, [-200, 200], [-25, 25])
@@ -241,6 +250,7 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
         setResolvedDestination(null)
         setIsSearching(false)
         x.set(0)
+        setIsHalal(false)
         setScores({ Adventure: 0, Luxury: 0, Culture: 0, Relaxation: 0, Foodie: 0 })
     }
 
@@ -310,6 +320,101 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
             toast.error("Search failed")
         } finally {
             setIsSearching(false)
+        }
+    }
+
+    const handleProceedToItinerary = async (selection: { flight: any, hotel: any }) => {
+        if (isBaking) {
+            console.warn("Baking already in progress, ignoring duplicate call.");
+            return;
+        }
+
+        console.log("Starting baking phase with selection:", selection);
+        setIsBaking(true);
+        const toastId = toast.loading("Baking your Hybrid Itinerary...");
+        const archetype = getArchetype()
+        const destName = resolvedDestination?.name || "Global"
+
+        try {
+            // Construct a hybrid prompt that enforces the selected flight and hotel
+            const hotelName = selection.hotel.hotel?.name || selection.hotel.name || "Premium Hotel"
+            const flightInfo = selection.flight.price ? `Flight ${selection.flight.id} for $${selection.flight.price.total}` : "Best available flight"
+
+            const hybridPrompt = `
+                Generate a 3-day itinerary for ${destName}. 
+                The user has ALREADY SELECTED these deals:
+                - FLIGHT: ${flightInfo}
+                - HOTEL: ${hotelName}
+                
+                Please ensure Day 1 starts with their arrival, and the "stay" for all days is "${hotelName}".
+                Base the activities on their ${archetype} vibe.
+            `
+
+            console.log("DEBUG: Baking Trip. Prompt:", hybridPrompt.substring(0, 40));
+            const res = await fetch(`/api/chat?v=${Date.now()}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: hybridPrompt, isHalal })
+            })
+
+            console.log("DEBUG: Fetch Status:", res.status, res.ok);
+            const rawText = await res.text();
+            console.log("DEBUG: Raw API Response (first 100 char):", rawText.substring(0, 100));
+
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                console.error("DEBUG: JSON Parse error on raw text:", rawText);
+                throw new Error("Malformed response from AI kitchen.");
+            }
+
+            if (!res.ok) throw new Error(data.error || "Generation failed at source.");
+
+            toast.dismiss(toastId)
+            toast.success("Bespoke Journey Ready!", { description: `Locked in ${destName}` })
+
+            if (data.id) {
+                const path = `/trip/generated/${data.id}`
+                console.log("Trip ready! Redirecting to:", path)
+
+                // Immediate Router Push
+                router.push(path)
+
+                // Clear any existing baking state after a long timeout just in case navigation fails silently
+                const safetyReset = setTimeout(() => {
+                    if (window.location.pathname !== path) {
+                        setIsBaking(false)
+                    }
+                }, 10000)
+
+                // Force a hard redirect if the router is completely stuck
+                setTimeout(() => {
+                    if (window.location.pathname !== path) {
+                        console.warn("Manual redirect triggered")
+                        window.location.href = path
+                    }
+                }, 4000)
+
+                // Close modal only after a safe buffer to allow router to initialize
+                setTimeout(() => {
+                    onClose()
+                }, 1500)
+
+                return // Keeping isBaking true for the overlay
+            } else {
+                console.error("STABLE-GATEWAY: Full API Data received without ID:", data)
+                toast.error(`Baking Success, but Lock Failed. (V3)`, {
+                    description: "Stale data detected. Please HARD REFRESH (Cmd+Shift+R) and try again.",
+                    duration: 10000
+                })
+                setIsBaking(false)
+            }
+        } catch (err) {
+            console.error("Itinerary Baking Error:", err)
+            toast.dismiss(toastId)
+            toast.error("Failed to bake itinerary")
+            setIsBaking(false) // Only reset on error
         }
     }
 
@@ -493,23 +598,63 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
                             </p>
 
                             <div className="space-y-4">
-                                <button
-                                    onClick={() => setShowDeals(true)}
-                                    className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left flex items-center justify-between group"
-                                >
-                                    <div>
-                                        <div className="text-white font-bold mb-0.5">Surprise Me</div>
-                                        <div className="text-xs text-white/40 italic">Explore the best matching global markets</div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-[0.2em] px-1 font-bold">
+                                        <Plane className="size-3" />
+                                        <span>Leaving From</span>
                                     </div>
-                                    <div className="size-8 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-black transition-all">
-                                        <ChevronRight className="size-4" />
+                                    <div className="relative group">
+                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-white/20 group-focus-within:text-emerald-500 transition-colors" />
+                                        <input
+                                            type="text"
+                                            value={originCity}
+                                            onChange={(e) => {
+                                                setOriginCity(e.target.value)
+                                                // Simple heuristic: if 3 chars and uppercase, it's likely a code
+                                                if (e.target.value.length === 3 && e.target.value === e.target.value.toUpperCase()) {
+                                                    setOriginCityCode(e.target.value)
+                                                }
+                                            }}
+                                            placeholder="Home City or Airport Code"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm text-white placeholder:text-white/10 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all font-mono"
+                                        />
                                     </div>
-                                </button>
+                                </div>
 
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 text-xs text-white/30 uppercase tracking-widest px-1">
-                                        <span>Or choose a destination</span>
+                                <div className="space-y-3 pt-2">
+                                    <div className="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-[0.2em] px-1 font-bold">
+                                        <Sparkles className="size-3" />
+                                        <span>Destination Choice</span>
                                     </div>
+
+                                    <div className="pt-2">
+                                        <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <Moon className={`size-4 ${isHalal ? "text-emerald-400 fill-emerald-400" : "text-white/40"}`} />
+                                                <span className="text-sm font-medium text-white/80">Halal Trip Mode</span>
+                                            </div>
+                                            <button
+                                                onClick={() => setIsHalal(!isHalal)}
+                                                className={`w-10 h-5 rounded-full transition-colors relative ${isHalal ? 'bg-emerald-500' : 'bg-white/20'}`}
+                                            >
+                                                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${isHalal ? 'left-5.5' : 'left-0.5'}`} />
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            onClick={() => setShowDeals(true)}
+                                            className="w-full group flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-left"
+                                        >
+                                            <div>
+                                                <div className="text-white font-bold mb-0.5">Surprise Me</div>
+                                                <div className="text-xs text-white/40 italic">Explore the best matching global markets</div>
+                                            </div>
+                                            <div className="size-8 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-black transition-all">
+                                                <ChevronRight className="size-4" />
+                                            </div>
+                                        </button>
+                                    </div>
+
                                     <div className="relative">
                                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-emerald-400" />
                                         <input
@@ -570,10 +715,20 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
                                 </div>
                             </div>
 
-                            <TravelDeals archetype={getArchetype()} customDestination={resolvedDestination?.code} />
+                            <TravelDeals
+                                archetype={getArchetype()}
+                                customDestination={resolvedDestination?.code}
+                                originCityCode={originCityCode}
+                                onComplete={({ flight, hotel }) => {
+                                    console.log("Confirmed selections. Passing to baker...");
+                                    toast.success("Ready to bake your itinerary!");
+                                    handleProceedToItinerary({ flight, hotel });
+                                }}
+                            />
 
                             <button
                                 onClick={onClose}
+                                disabled={isBaking}
                                 className="w-full mt-6 text-center text-xs text-white/30 hover:text-white transition-colors"
                             >
                                 Continue to Dashboard
@@ -581,6 +736,59 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
                         </motion.div>
                     )}
                 </div>
+
+                {isBaking && (
+                    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl">
+                        <div className="relative scale-110">
+                            <div className="size-24 rounded-full border-b-2 border-emerald-500 animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Sparkles className="size-10 text-emerald-400 animate-pulse" />
+                            </div>
+                        </div>
+                        <div className="mt-10 text-center px-10">
+                            <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Baking Your Trip</h3>
+                            <p className="text-white/40 text-sm max-w-[280px] mx-auto leading-relaxed mb-8">Merging your selected flight and hotel into a custom AI itinerary...</p>
+
+                            <div className="space-y-4">
+                                <div className="flex gap-2 justify-center">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:-0.3s]" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:-0.15s]" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" />
+                                </div>
+
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 8 }}
+                                    className="pt-4"
+                                >
+                                    <p className="text-[10px] text-white/20 uppercase tracking-widest mb-4">Taking longer than expected?</p>
+                                    <div className="flex flex-col gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-white/10 text-white/60 hover:text-white hover:bg-white/5 h-12 rounded-xl"
+                                            onClick={() => {
+                                                setIsBaking(false)
+                                                toast.error("Generation timed out. Please try again.")
+                                            }}
+                                        >
+                                            Cancel & Try Again
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-white/20 hover:text-white text-[10px]"
+                                            onClick={() => window.location.reload()}
+                                        >
+                                            Force Site Reload
+                                        </Button>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </motion.div>
         </AnimatePresence>
     )

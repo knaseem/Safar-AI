@@ -28,6 +28,7 @@ export default function ProfilePage() {
     const [showVibeCheck, setShowVibeCheck] = useState(false)
     const [selectedBooking, setSelectedBooking] = useState<any>(null)
     const [deletingTripId, setDeletingTripId] = useState<string | null>(null)
+    const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null)
 
     useEffect(() => {
         async function loadProfile() {
@@ -41,15 +42,27 @@ export default function ProfilePage() {
 
             setUser(user)
 
-            // Fetch profile
+            // Fetch base profile info
             const { data: profileData } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
                 .single()
 
-            if (profileData) {
-                setProfile(profileData)
+            // Fetch travel identity (archetype, scores)
+            const { data: travelData } = await supabase
+                .from('travel_profiles')
+                .select('*')
+                .eq('user_id', user.id)
+                .single()
+
+            if (profileData || travelData) {
+                setProfile({
+                    ...profileData,
+                    ...travelData,
+                    // Map traits.scores to the expected archetype_scores field
+                    archetype_scores: travelData?.traits?.scores || {}
+                })
             }
 
             // Fetch bookings
@@ -98,6 +111,31 @@ export default function ProfilePage() {
         setDeletingTripId(null)
     }
 
+    const handleDeleteBooking = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (deletingBookingId !== id) {
+            setDeletingBookingId(id)
+            return
+        }
+
+        try {
+            const res = await fetch(`/api/bookings?id=${id}`, {
+                method: 'DELETE'
+            })
+
+            if (res.ok) {
+                setBookings(prev => prev.filter(b => b.id !== id))
+                toast.success("Booking request removed")
+            } else {
+                throw new Error("Failed to delete")
+            }
+        } catch (err) {
+            toast.error("Failed to delete booking")
+        } finally {
+            setDeletingBookingId(null)
+        }
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
@@ -133,15 +171,22 @@ export default function ProfilePage() {
 
                             <div className="flex gap-3 pb-2">
                                 <Button
-                                    onClick={() => setShowPassport(true)}
-                                    className="bg-white text-black hover:bg-neutral-200"
+                                    onClick={() => {
+                                        if (profile?.archetype) {
+                                            setShowPassport(true)
+                                        } else {
+                                            toast.error("Vibe Identity Not Found", {
+                                                description: "Complete a Vibe Check to unlock your Travel Passport."
+                                            })
+                                        }
+                                    }}
+                                    className="bg-white text-black hover:bg-neutral-200 font-bold"
                                 >
                                     View Travel Passport
                                 </Button>
                                 <Button
-                                    variant="outline"
                                     onClick={() => setShowVibeCheck(true)}
-                                    className="border-white/10 text-white hover:bg-white/5"
+                                    className="bg-neutral-800 text-white hover:bg-neutral-700 border border-white/10 font-bold"
                                 >
                                     Retake Vibe Check
                                 </Button>
@@ -265,18 +310,58 @@ export default function ProfilePage() {
                                                             </div>
                                                         </div>
 
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="text-right">
-                                                                <p className="text-xs text-white/40 uppercase">Est. Budget</p>
-                                                                <p className="text-lg font-semibold text-white">${booking.estimated_price?.toLocaleString()}</p>
-                                                            </div>
+                                                        <div className="text-right">
+                                                            <p className="text-xs text-white/40 uppercase">Est. Budget</p>
+                                                            <p className="text-lg font-semibold text-white">${booking.estimated_price?.toLocaleString()}</p>
+                                                        </div>
+                                                        <div className="flex flex-col gap-2">
                                                             <Button
                                                                 variant="outline"
+                                                                size="sm"
                                                                 className="bg-transparent border-white/10 text-white hover:bg-white/10"
                                                                 onClick={() => setSelectedBooking(booking)}
                                                             >
                                                                 View Details
                                                             </Button>
+                                                            <AnimatePresence mode="wait">
+                                                                {deletingBookingId === booking.id ? (
+                                                                    <motion.div
+                                                                        key="confirm-booking-wrap"
+                                                                        initial={{ opacity: 0, scale: 0.9, x: 10 }}
+                                                                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                                                                        exit={{ opacity: 0, scale: 0.9, x: 10 }}
+                                                                        className="flex items-center gap-2"
+                                                                    >
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation()
+                                                                                setDeletingBookingId(null)
+                                                                            }}
+                                                                            className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={(e) => handleDeleteBooking(booking.id, e)}
+                                                                            className="px-3 py-1 bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all whitespace-nowrap"
+                                                                        >
+                                                                            Confirm Delete
+                                                                        </button>
+                                                                    </motion.div>
+                                                                ) : (
+                                                                    <motion.button
+                                                                        key="trash-booking"
+                                                                        initial={{ opacity: 0 }}
+                                                                        animate={{ opacity: 1 }}
+                                                                        exit={{ opacity: 0 }}
+                                                                        onClick={(e) => handleDeleteBooking(booking.id, e)}
+                                                                        className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all self-end"
+                                                                        title="Delete Booking"
+                                                                    >
+                                                                        <Trash2 className="size-4" />
+                                                                    </motion.button>
+                                                                )}
+                                                            </AnimatePresence>
                                                         </div>
                                                     </div>
                                                 </CardContent>
@@ -327,16 +412,29 @@ export default function ProfilePage() {
                                                         )}
                                                         <AnimatePresence mode="wait">
                                                             {deletingTripId === trip.id ? (
-                                                                <motion.button
-                                                                    key="confirm"
+                                                                <motion.div
+                                                                    key="confirm-trip-wrap"
                                                                     initial={{ opacity: 0, scale: 0.9, x: 10 }}
                                                                     animate={{ opacity: 1, scale: 1, x: 0 }}
                                                                     exit={{ opacity: 0, scale: 0.9, x: 10 }}
-                                                                    onClick={(e) => handleDeleteTrip(trip.id, e)}
-                                                                    className="px-3 py-1 bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all whitespace-nowrap"
+                                                                    className="flex items-center gap-2"
                                                                 >
-                                                                    Confirm Delete
-                                                                </motion.button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation()
+                                                                            setDeletingTripId(null)
+                                                                        }}
+                                                                        className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => handleDeleteTrip(trip.id, e)}
+                                                                        className="px-3 py-1 bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all whitespace-nowrap"
+                                                                    >
+                                                                        Confirm Delete
+                                                                    </button>
+                                                                </motion.div>
                                                             ) : (
                                                                 <motion.button
                                                                     key="trash"

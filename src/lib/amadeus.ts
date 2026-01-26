@@ -167,15 +167,25 @@ export async function searchLocations(keyword: string) {
     if (!amadeus) return [];
 
     // Test Data Fallbacks (Amadeus Test API has limited coverage)
-    const upperKeyword = keyword.toUpperCase();
+    const upperKeyword = keyword.toUpperCase().trim();
     const fallbacks: Record<string, any> = {
         'DUBAI': [{ iataCode: 'DXB', name: 'DUBAI', address: { cityName: 'DUBAI', cityCode: 'DXB' } }],
-        'ABU DHABI': [{ iataCode: 'AUH', name: 'ABU DHABI', address: { cityName: 'ABU DHABI', cityCode: 'AUH' } }],
         'DXB': [{ iataCode: 'DXB', name: 'DUBAI', address: { cityName: 'DUBAI', cityCode: 'DXB' } }],
-        'AUH': [{ iataCode: 'AUH', name: 'ABU DHABI', address: { cityName: 'ABU DHABI', cityCode: 'AUH' } }]
+        'LONDON': [{ iataCode: 'LHR', name: 'LONDON', address: { cityName: 'LONDON', cityCode: 'LON' } }],
+        'LON': [{ iataCode: 'LHR', name: 'LONDON', address: { cityName: 'LONDON', cityCode: 'LON' } }],
+        'LHR': [{ iataCode: 'LHR', name: 'LONDON', address: { cityName: 'LONDON', cityCode: 'LON' } }],
+        'TOKYO': [{ iataCode: 'HND', name: 'TOKYO', address: { cityName: 'TOKYO', cityCode: 'TYO' } }],
+        'HND': [{ iataCode: 'HND', name: 'TOKYO', address: { cityName: 'TOKYO', cityCode: 'TYO' } }],
+        'NRT': [{ iataCode: 'NRT', name: 'TOKYO', address: { cityName: 'TOKYO', cityCode: 'TYO' } }],
+        'SYDNEY': [{ iataCode: 'SYD', name: 'SYDNEY', address: { cityName: 'SYDNEY', cityCode: 'SYD' } }],
+        'SYD': [{ iataCode: 'SYD', name: 'SYDNEY', address: { cityName: 'SYDNEY', cityCode: 'SYD' } }],
+        'PARIS': [{ iataCode: 'CDG', name: 'PARIS', address: { cityName: 'PARIS', cityCode: 'PAR' } }],
+        'NYC': [{ iataCode: 'JFK', name: 'NEW YORK', address: { cityName: 'NEW YORK', cityCode: 'NYC' } }],
+        'NEW YORK': [{ iataCode: 'JFK', name: 'NEW YORK', address: { cityName: 'NEW YORK', cityCode: 'NYC' } }]
     };
 
-    if (process.env.AMADEUS_HOSTNAME === 'test' && fallbacks[upperKeyword]) {
+    if (process.env.AMADEUS_HOSTNAME !== 'production' && fallbacks[upperKeyword]) {
+        console.log('Using fallback for keyword:', upperKeyword);
         return fallbacks[upperKeyword];
     }
 

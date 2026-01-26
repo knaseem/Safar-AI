@@ -1,48 +1,20 @@
--- Phase 8: AI Travel Profiles (FIXED)
--- Run this in Supabase SQL Editor
+-- Phase 8: Advanced Booking Preferences
+-- Adds support for seat preferences, baggage counts, dietary requirements, and special occasions.
 
--- 0. Safety cleanup: Drop table if it exists to ensure clean state
-DROP TABLE IF EXISTS public.travel_profiles;
+-- Update seat_preference check constraint
+ALTER TABLE public.booking_requests 
+DROP CONSTRAINT IF EXISTS booking_requests_seat_preference_check;
 
--- 1. Create travel_profiles table
-CREATE TABLE public.travel_profiles (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-    archetype TEXT DEFAULT 'Explorer',
-    traits JSONB DEFAULT '{}'::jsonb,
-    preferences JSONB DEFAULT '{}'::jsonb,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id)
-);
+ALTER TABLE public.booking_requests 
+ADD CONSTRAINT booking_requests_seat_preference_check 
+CHECK (seat_preference IN ('aisle', 'window', 'no-preference'));
 
--- 2. Enable RLS
-ALTER TABLE public.travel_profiles ENABLE ROW LEVEL SECURITY;
+-- Add new columns
+ALTER TABLE public.booking_requests 
+ADD COLUMN IF NOT EXISTS baggage_count INTEGER DEFAULT 1,
+ADD COLUMN IF NOT EXISTS dietary_requirements TEXT,
+ADD COLUMN IF NOT EXISTS is_special_occasion BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS occasion_type TEXT;
 
--- 3. Policies
-CREATE POLICY "Users can view own profile" 
-    ON public.travel_profiles FOR SELECT 
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own profile" 
-    ON public.travel_profiles FOR INSERT 
-    WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own profile" 
-    ON public.travel_profiles FOR UPDATE 
-    USING (auth.uid() = user_id);
-
--- 4. Ensure trigger function exists (Dependency)
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- 5. Trigger for updated_at
-CREATE TRIGGER update_travel_profiles_updated_at
-    BEFORE UPDATE ON public.travel_profiles
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+-- Rename baggage to baggage_legacy (optional, to keep it clean)
+-- ALTER TABLE public.booking_requests RENAME COLUMN baggage TO baggage_legacy;

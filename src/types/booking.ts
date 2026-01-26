@@ -30,8 +30,11 @@ export interface BookingRequest {
     // Preferences
     room_type: 'single' | 'double' | 'suite'
     flight_class: 'economy' | 'business' | 'first'
-    seat_preference?: 'aisle' | 'window' | 'no_preference'
-    baggage?: 'carry_on' | 'checked'
+    seat_preference?: 'aisle' | 'window' | 'no-preference'
+    baggage_count?: number
+    dietary_requirements?: string
+    is_special_occasion?: boolean
+    occasion_type?: string
 
     // Contact
     contact: BookingContactInfo

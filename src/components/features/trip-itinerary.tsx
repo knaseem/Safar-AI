@@ -17,12 +17,13 @@ import { saveAs } from "file-saver"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 import { useRouter } from 'next/navigation'
-import { generateAffiliateLink } from "@/lib/affiliate"
+import { generateAffiliateLink, extractCleanCity } from "@/lib/affiliate"
 import { AtmosphericBackground } from "./atmospheric-background"
 import { useSound } from "./ambient-sound-provider"
 import { useTripAudio } from "@/hooks/use-trip-audio"
 import { ActivityCard, HotelVerificationBadge, MoonIcon } from "./trip-itinerary-items"
 import { VibeBadge } from "./vibe-badge"
+import { ConciergePortal } from "./concierge-portal"
 
 export type TripData = {
     trip_name: string
@@ -47,9 +48,10 @@ interface TripItineraryProps {
     isHalal?: boolean
     isShared?: boolean
     tripId?: string // If present, enables sharing
+    searchQuery?: string // Original search context from user
 }
 
-export function TripItinerary({ data, onReset, isHalal = false, isShared = false, tripId }: TripItineraryProps) {
+export function TripItinerary({ data, onReset, isHalal = false, isShared = false, tripId, searchQuery }: TripItineraryProps) {
     const [isBookingOpen, setIsBookingOpen] = useState(false)
     const [isChatOpen, setIsChatOpen] = useState(false)
     const [isShareModalOpen, setIsShareModalOpen] = useState(false)
@@ -60,6 +62,16 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
     const [savedTripId, setSavedTripId] = useState<string | null>(tripId || null)
     const [activeDayIndex, setActiveDayIndex] = useState(0)
     const [timeOfDay, setTimeOfDay] = useState<'Morning' | 'Afternoon' | 'Evening'>('Morning')
+
+    // Concierge Portal State
+    const [portalUrl, setPortalUrl] = useState<string | null>(null)
+    const [isPortalOpen, setIsPortalOpen] = useState(false)
+    const [portalTitle, setPortalTitle] = useState("Secure Booking")
+
+    // Standardized destination extraction using precision utility
+    const destinationName = searchQuery || data.trip_name || data.days[0]?.theme || 'Destination'
+    const cleanDestination = extractCleanCity(destinationName)
+
     const [isMounted, setIsMounted] = useState(false)
     const dayRefs = useRef<(HTMLDivElement | null)[]>([])
     const { user } = useAuth()
@@ -359,24 +371,39 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                         <ActivityCard
                                             time="Morning"
                                             title={day.morning}
-                                            destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                            destination={cleanDestination}
                                             isActive={activeDayIndex === index}
+                                            onBook={(url) => {
+                                                setPortalUrl(url)
+                                                setPortalTitle("Experience Secure Booking")
+                                                setIsPortalOpen(true)
+                                            }}
                                         />
                                     </div>
                                     <div onMouseEnter={() => setTimeOfDay('Afternoon')}>
                                         <ActivityCard
                                             time="Afternoon"
                                             title={day.afternoon}
-                                            destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                            destination={cleanDestination}
                                             isActive={activeDayIndex === index}
+                                            onBook={(url) => {
+                                                setPortalUrl(url)
+                                                setPortalTitle("Experience Secure Booking")
+                                                setIsPortalOpen(true)
+                                            }}
                                         />
                                     </div>
                                     <div onMouseEnter={() => setTimeOfDay('Evening')}>
                                         <ActivityCard
                                             time="Evening"
                                             title={day.evening}
-                                            destination={data.days[0]?.theme?.split(' ').slice(-1)[0] || data.trip_name}
+                                            destination={cleanDestination}
                                             isActive={activeDayIndex === index}
+                                            onBook={(url) => {
+                                                setPortalUrl(url)
+                                                setPortalTitle("Experience Secure Booking")
+                                                setIsPortalOpen(true)
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -404,11 +431,13 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                             const hotel = day.stay.split(':')[0]
                                             const url = generateAffiliateLink('hotel', {
                                                 name: hotel,
-                                                destination: data.days[0]?.theme || '',
+                                                destination: cleanDestination,
                                                 // Default to next month for checking rates if no dates
                                                 checkIn: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0]
                                             })
-                                            window.open(url, '_blank')
+                                            setPortalUrl(url)
+                                            setPortalTitle(`Booking: ${hotel}`)
+                                            setIsPortalOpen(true)
                                         }}
                                         className="opacity-0 group-hover/stay:opacity-100 flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded transition-all hover:bg-emerald-500/20"
                                     >
@@ -434,6 +463,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                 tripData={data}
                 isHalal={isHalal}
                 isOpen={isBookingOpen}
+                searchQuery={searchQuery}
                 onClose={() => setIsBookingOpen(false)}
             />
 
@@ -456,6 +486,14 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                     shareUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${savedTripId}`}
                 />
             )}
+
+            <ConciergePortal
+                isOpen={isPortalOpen}
+                url={portalUrl}
+                onClose={() => setIsPortalOpen(false)}
+                title={portalTitle}
+                providerName="Expedia"
+            />
         </>
     )
 }

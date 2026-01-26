@@ -100,8 +100,8 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                                     <div className="text-sm">
                                         <span className="font-bold uppercase tracking-wider mr-2">{booking.status}</span>
                                         {booking.status === 'booked' ?
-                                            "Your booking is confirmed! Your Travel HUD and countdown are now live." :
-                                            "Awaiting final booking confirmation from your end."
+                                            "Itinerary Locked & Confirmed! Your Travel HUD and countdown are now live." :
+                                            "Awaiting final confirmation. Use the provider links in your itinerary to book."
                                         }
                                     </div>
                                 </div>
@@ -178,6 +178,31 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                                                 <p className="text-sm font-medium capitalize">{booking.room_type}</p>
                                             </div>
                                         </div>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg border border-white/5">
+                                                <div className="size-4 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px] font-bold">S</div>
+                                                <div>
+                                                    <p className="text-[10px] text-white/40 uppercase">Seat</p>
+                                                    <p className="text-[11px] font-medium capitalize">{booking.seat_preference?.replace('-', ' ')}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg border border-white/5">
+                                                <Briefcase className="size-4 text-indigo-400" />
+                                                <div>
+                                                    <p className="text-[10px] text-white/40 uppercase">Bags</p>
+                                                    <p className="text-[11px] font-medium">{booking.baggage_count} Checked</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {booking.dietary_requirements && (
+                                            <div className="flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg border border-white/5">
+                                                <Info className="size-4 text-emerald-400" />
+                                                <div>
+                                                    <p className="text-[10px] text-white/40 uppercase">Dietary</p>
+                                                    <p className="text-xs font-medium">{booking.dietary_requirements}</p>
+                                                </div>
+                                            </div>
+                                        )}
                                         {booking.travel_insurance && (
                                             <div className="flex items-center gap-3 text-emerald-400 bg-emerald-500/5 p-3 rounded-lg border border-emerald-500/20">
                                                 <CheckCircle2 className="size-4" />
@@ -203,11 +228,30 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                                 </div>
                             </div>
 
-                            {booking.special_requests && (
+                            {booking.is_special_occasion && (
                                 <div className="space-y-4">
-                                    <h4 className="text-sm font-bold text-white/20 uppercase tracking-[0.2em]">Special Requests</h4>
-                                    <div className="bg-white/5 p-4 rounded-xl border border-white/5 italic text-white/60 text-sm">
-                                        "{booking.special_requests}"
+                                    <h4 className="text-sm font-bold text-white/20 uppercase tracking-[0.2em]">Special Occasion</h4>
+                                    <div className="bg-pink-500/5 p-4 rounded-xl border border-pink-500/20 flex items-center gap-4">
+                                        <div className="size-10 rounded-full bg-pink-500/20 flex items-center justify-center">
+                                            <Sparkles className="size-5 text-pink-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-pink-400 font-bold text-sm">{booking.occasion_type || "Celebration"}</p>
+                                            <p className="text-pink-400/60 text-[10px] uppercase tracking-wider">AI Concierge Alerted</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {(booking.special_requests || booking.dietary_requirements) && (
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-bold text-white/20 uppercase tracking-[0.2em]">Concierge Notes</h4>
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-3">
+                                        {booking.special_requests && (
+                                            <div className="italic text-white/60 text-sm">
+                                                "{booking.special_requests}"
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -239,8 +283,7 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                                 <>
                                     <Button
                                         onClick={onClose}
-                                        variant="outline"
-                                        className="flex-1 border-white/10 text-white hover:bg-white/5"
+                                        className="flex-1 bg-white text-black hover:bg-white/90 border-none font-bold"
                                     >
                                         Close
                                     </Button>
@@ -254,7 +297,7 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                                         ) : (
                                             <Sparkles className="size-4 mr-2" />
                                         )}
-                                        Confirm My Booking
+                                        Confirm Itinerary Lock
                                     </Button>
                                 </>
                             ) : (

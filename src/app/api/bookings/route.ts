@@ -64,8 +64,11 @@ export async function POST(req: NextRequest) {
             travelers: body.travelers,
             room_type: body.room_type,
             flight_class: body.flight_class,
-            seat_preference: body.seat_preference || 'no_preference',
-            baggage: body.baggage || 'checked',
+            seat_preference: body.seat_preference || 'no-preference',
+            baggage_count: body.baggage_count || 1,
+            dietary_requirements: body.dietary_requirements || null,
+            is_special_occasion: body.is_special_occasion || false,
+            occasion_type: body.occasion_type || null,
             contact_first_name: body.contact.firstName,
             contact_last_name: body.contact.lastName,
             contact_email: body.contact.email,
@@ -131,6 +134,41 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ success: true, booking: updated })
     } catch (error) {
         console.error("Booking PATCH error:", error)
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    }
+}
+
+// DELETE: Remove a booking request
+export async function DELETE(req: NextRequest) {
+    try {
+        const supabase = await createClient()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+        if (authError || !user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
+        const { searchParams } = new URL(req.url)
+        const id = searchParams.get('id')
+
+        if (!id) {
+            return NextResponse.json({ error: "Missing ID" }, { status: 400 })
+        }
+
+        const { error } = await supabase
+            .from("booking_requests")
+            .delete()
+            .eq("id", id)
+            .eq("user_id", user.id) // Security: Must own the booking
+
+        if (error) {
+            console.error("Error deleting booking:", error)
+            return NextResponse.json({ error: "Failed to delete booking" }, { status: 500 })
+        }
+
+        return NextResponse.json({ success: true })
+    } catch (error) {
+        console.error("Booking DELETE error:", error)
         return NextResponse.json({ error: "Internal server error" }, { status: 500 })
     }
 }

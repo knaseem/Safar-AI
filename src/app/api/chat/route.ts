@@ -10,14 +10,18 @@ export async function POST(req: Request) {
     const supabase = await createClient();
 
     // 1. Get the user's "Travel DNA" (or default)
-    const { data: profiles, error } = await supabase
-      .from("travel_profiles")
-      .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
-      .single();
+    const { data: { user } } = await supabase.auth.getUser();
+    let profile = { archetype: "Explorer", traits: {} };
 
-    // Graceful fallback if no profile exists
-    const profile = profiles || { archetype: "Explorer", traits: {} };
+    if (user) {
+      const { data: userProfile } = await supabase
+        .from("travel_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (userProfile) profile = userProfile;
+    }
 
     // 2. Construct the Prompt
     const systemPrompt = `
@@ -26,8 +30,7 @@ export async function POST(req: Request) {
       ${isHalal ? "CRITICAL REQUIREMENT: This is a HALAL trip. YOU MUST ONLY suggest hotels with no alcohol (or removal options), Halal food options nearby, and family-friendly activities. Avoid nightlife/clubs." : ""}
       
       Design a 3-day ultra-personalized itinerary based on their request: "${prompt}".
-      
-      Format the response as a valid JSON object with this structure:
+      Format the response as a valid JSON object with COMPLETED data (no placeholders) with this structure:
       {
         "trip_name": "Title of the trip",
         "sound_theme": "one of: city | nature | ocean | desert | cafe",
@@ -36,14 +39,14 @@ export async function POST(req: Request) {
             "day": 1,
             "theme": "Theme of the day",
             "coordinates": { "lat": 0.0, "lng": 0.0 },
-            "morning": "Activity description",
-            "afternoon": "Activity description",
-            "evening": "Activity description",
+            "morning": "Detailed morning activity description",
+            "afternoon": "Detailed afternoon activity description",
+            "evening": "Detailed evening activity description",
             "stay": "Hotel recommendation"
           }
         ]
       }
-      IMPORTANT: You must provide real approximate coordinates (lat/lng) for the main location of each day to enable the 3D map flyover.
+      IMPORTANT: Include all 3 days. You must provide real approximate coordinates (lat/lng) for the main location of each day.
       Do not include markdown formatting like \`\`\`json. Just return the raw JSON.
     `;
 
@@ -53,9 +56,30 @@ export async function POST(req: Request) {
     const response = await result.response;
     const text = response.text();
 
-    // Clean up markdown formatting if present
-    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const tripData = JSON.parse(cleanedText);
+    if (!text) {
+      console.error("AI Error: Empty text returned from model");
+      throw new Error("The AI explorer is currently busy. Please try again in a moment.");
+    }
+
+    // Clean up markdown formatting and extract JSON
+    let tripData;
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const cleanedText = jsonMatch ? jsonMatch[0] : text;
+      tripData = JSON.parse(cleanedText);
+
+      if (!tripData || typeof tripData !== 'object') {
+        throw new Error("Parsed data is not an object");
+      }
+
+      // Ensure basic structure exists
+      if (!tripData.trip_name) tripData.trip_name = "My Bespoke Journey";
+      if (!tripData.days) tripData.days = [];
+
+    } catch (parseError) {
+      console.error("JSON Parse Error. Cleaned text:", text);
+      throw new Error("Invalid AI response format");
+    }
 
     // 4. Persistence: Save to temporary_trips to prevent loss on refresh
     const { data: tempTrip, error: tempError } = await supabase
@@ -63,20 +87,25 @@ export async function POST(req: Request) {
       .insert({
         trip_data: tripData,
         is_halal: isHalal || false,
-        user_id: (await supabase.auth.getUser()).data.user?.id || null
+        search_query: prompt,
+        user_id: user?.id || null
       })
       .select("id")
       .single();
 
-    if (tempError) {
-      console.error("Failed to save temporary trip:", tempError);
+    if (tempError || !tempTrip || !tempTrip.id) {
+      console.error("Persistence Failure:", tempError || "No trip ID returned from DB");
+      throw new Error(`Failed to lock in your itinerary: ${tempError?.message || 'Database rejection'}`);
     }
 
     // 5. Return Data
-    return NextResponse.json({
+    const finalResponse = {
       ...tripData,
-      id: tempTrip?.id
-    });
+      id: tempTrip.id,
+      _v: "v3-stable"
+    };
+    console.log("DEBUG: Final response payload:", JSON.stringify(finalResponse, null, 2));
+    return NextResponse.json(finalResponse);
   } catch (error) {
     console.error("AI Error:", error);
     return NextResponse.json(

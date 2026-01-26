@@ -1,5 +1,25 @@
 export type AffiliateType = 'hotel' | 'activity' | 'flight' | 'general'
 
+/**
+ * Extracts a clean city name from a trip title or search query.
+ * Removes prefixes like "X days in", "Trip to", "Staying at", etc.
+ */
+export function extractCleanCity(input: string): string {
+    if (!input) return ''
+
+    // Core regex to strip everything before "in", "to", "at", etc.
+    // e.g., "5 days in Paris" -> "Paris"
+    // "My trip to Tokyo" -> "Tokyo"
+    const cleanupRegex = /^(?:\d+\s+days?\s+in\s+|trip\s+to\s+|stay(?:ing)?\s+at\s+|visiting\s+)/i
+    let clean = input.replace(cleanupRegex, '').trim()
+
+    // If it's still complex (e.g. "Paris: The City of Light"), take the first part
+    clean = clean.split(/[:,-]/)[0].trim()
+
+    // Final safety: don't let it be too short or too long if it was malformed
+    return clean || input
+}
+
 export function generateAffiliateLink(
     type: AffiliateType,
     params: {
@@ -11,7 +31,12 @@ export function generateAffiliateLink(
     }
 ): string {
     const { destination = '', name = '', checkIn, checkOut, origin } = params
-    const query = encodeURIComponent(`${name} ${destination}`.trim())
+
+    // CLEAN DESTINATION: Crucial for avoiding "Things to Do" fallback on Expedia
+    const cleanCity = extractCleanCity(destination)
+    const searchQuery = extractCleanCity(name || destination)
+    const encodedSearch = encodeURIComponent(searchQuery)
+    const encodedCity = encodeURIComponent(cleanCity)
 
     // In a real app, these would be your actual affiliate IDs
     // const BOOKING_AID = '123456'
@@ -19,27 +44,48 @@ export function generateAffiliateLink(
 
     switch (type) {
         case 'hotel':
-            // Expedia Hotel Search
-            let hotelUrl = `https://www.expedia.com/Hotel-Search?destination=${query}`
+            // Expedia Hotel Search - Use clean city and specific search query
+            let hotelUrl = `https://www.expedia.com/Hotel-Search?destination=${encodedCity}`
+            if (name && name !== destination) {
+                // If we have a specific hotel name, search for that within the city
+                hotelUrl = `https://www.expedia.com/Hotel-Search?destination=${encodedCity}&hotelName=${encodeURIComponent(name)}`
+            }
+
             if (checkIn) hotelUrl += `&startDate=${checkIn}`
             if (checkOut) hotelUrl += `&endDate=${checkOut}`
             return hotelUrl
 
         case 'activity':
-            // Expedia Things to Do
-            return `https://www.expedia.com/Activities-Search?query=${query}`
+            // Expedia Things to Do - Use clean city
+            let activityUrl = `https://www.expedia.com/things-to-do/search?location=${encodedCity}`
+            if (checkIn) {
+                // MM/DD/YYYY format for activity search
+                const parts = checkIn.split('-')
+                if (parts.length === 3) {
+                    const [y, m, d] = parts
+                    activityUrl += `&startDate=${m}%2F${d}%2F${y}`
+                }
+            }
+            if (checkOut) {
+                const parts = checkOut.split('-')
+                if (parts.length === 3) {
+                    const [y, m, d] = parts
+                    activityUrl += `&endDate=${m}%2F${d}%2F${y}`
+                }
+            }
+            return activityUrl
 
         case 'flight':
-            // Expedia Flight Search
-            // Format: leg1=from:Origin,to:Destination,departure:YYYY-MM-DD
+            // Expedia Flight Search - Leg-based format
             const flightOrigin = origin || 'any'
-            const flightDest = destination || 'any'
-            let flightUrl = `https://www.expedia.com/Flights-Search?leg1=from:${flightOrigin},to:${flightDest}`
+            const flightDest = cleanCity || 'any'
+            let flightUrl = `https://www.expedia.com/Flights-Search?leg1=from:${encodeURIComponent(flightOrigin)},to:${encodeURIComponent(flightDest)}`
             if (checkIn) flightUrl += `,departure:${checkIn}`
+            flightUrl += `&mode=search` // Ensure it enters search mode
             return flightUrl
 
         case 'general':
         default:
-            return `https://www.expedia.com/Search?city=${query}`
+            return `https://www.expedia.com/Search?city=${encodedSearch}`
     }
 }

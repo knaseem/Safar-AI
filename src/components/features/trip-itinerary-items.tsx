@@ -46,7 +46,7 @@ export function HotelVerificationBadge({ hotel }: { hotel: string }) {
     )
 }
 
-export function ActivityCard({ time, title, destination, isActive = false }: { time: string, title: string, destination: string, isActive?: boolean }) {
+export function ActivityCard({ time, title, destination, isActive = false, onBook }: { time: string, title: string, destination: string, isActive?: boolean, onBook?: (url: string) => void }) {
     const [status, setStatus] = useState<'idle' | 'checking' | 'verified'>('idle')
 
     const handleBook = () => {
@@ -54,7 +54,11 @@ export function ActivityCard({ time, title, destination, isActive = false }: { t
             name: title,
             destination: destination
         })
-        window.open(url, '_blank')
+        if (onBook) {
+            onBook(url)
+        } else {
+            window.open(url, '_blank')
+        }
     }
 
     const handleMouseEnter = () => {

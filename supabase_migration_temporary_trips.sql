@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.temporary_trips (
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Optional if not logged in
     trip_data JSONB NOT NULL,
     is_halal BOOLEAN DEFAULT FALSE,
+    search_query TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

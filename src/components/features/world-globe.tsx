@@ -369,8 +369,7 @@ export function WorldGlobe() {
                                 onClick={() => {
                                     if (!selectedTrip) return
                                     const url = generateAffiliateLink('general', {
-                                        destination: selectedTrip.title,
-                                        name: 'Full Trip Package'
+                                        destination: selectedTrip.title
                                     })
                                     window.open(url, '_blank')
                                 }}

@@ -36,6 +36,7 @@ export default async function GeneratedTripPage({ params }: GeneratedTripPagePro
                 <TripItinerary
                     data={trip.trip_data as any}
                     isHalal={trip.is_halal}
+                    searchQuery={trip.search_query}
                     // We don't mark as shared because we want the user to be able to save it
                     isShared={false}
                 />

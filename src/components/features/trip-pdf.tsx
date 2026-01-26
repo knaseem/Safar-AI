@@ -8,111 +8,139 @@ import { TripData } from './trip-itinerary'
 const styles = StyleSheet.create({
     page: {
         flexDirection: 'column',
-        backgroundColor: '#0a0a0a', // Dark background
+        backgroundColor: '#0a0a0a',
         color: '#ffffff',
         padding: 40,
         fontFamily: 'Helvetica',
     },
-    // Header / Cover
-    headerSection: {
+    coverPage: {
+        flexDirection: 'column',
+        backgroundColor: '#050505',
+        color: '#ffffff',
+        height: '100%',
+        padding: 60,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    coverTitle: {
+        fontSize: 48,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        textAlign: 'center',
+        color: '#ffffff',
+    },
+    coverSubtitle: {
+        fontSize: 14,
+        color: '#34d399',
+        textTransform: 'uppercase',
+        letterSpacing: 4,
         marginBottom: 40,
-        borderBottom: '1px solid #333',
+    },
+    coverLine: {
+        width: 100,
+        height: 2,
+        backgroundColor: '#34d399',
+        marginBottom: 40,
+    },
+    coverFooter: {
+        position: 'absolute',
+        bottom: 60,
+        textAlign: 'center',
+        fontSize: 10,
+        color: '#52525b',
+        letterSpacing: 1,
+    },
+    // Main Content
+    headerSection: {
+        marginBottom: 30,
+        borderBottom: '1px solid #1f2937',
         paddingBottom: 20,
     },
     badge: {
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         color: '#34d399',
         paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 12,
+        paddingVertical: 4,
+        borderRadius: 4,
         alignSelf: 'flex-start',
-        fontSize: 10,
-        marginBottom: 10,
+        fontSize: 9,
+        marginBottom: 12,
         textTransform: 'uppercase',
         letterSpacing: 2,
     },
     title: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 8,
         color: '#ffffff',
-        // fontFamily: 'Helvetica-Bold', // Standard font
     },
     subtitle: {
-        fontSize: 12,
-        color: '#a1a1aa',
-        marginBottom: 20,
+        fontSize: 11,
+        color: '#71717a',
+        marginBottom: 10,
     },
     // Day Section
     dayContainer: {
-        marginBottom: 25,
-        paddingLeft: 15,
-        borderLeft: '2px solid #333',
+        marginBottom: 30,
+        padding: 20,
+        backgroundColor: '#111111',
+        borderRadius: 12,
+        border: '1px solid #1f2937',
     },
     dayHeader: {
         flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        marginBottom: 15,
+        borderBottom: '1px solid #1f2937',
+        paddingBottom: 10,
     },
-    dayCircle: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#10b981',
-        position: 'absolute',
-        left: -20,
-        top: 6,
-    },
-    dayTitle: {
-        fontSize: 18,
-        color: '#10b981',
-        marginBottom: 4,
-        // fontFamily: 'Helvetica-Bold',
+    dayTitleIdx: {
+        fontSize: 20,
+        color: '#34d399',
+        fontWeight: 'bold',
     },
     dayTheme: {
         fontSize: 12,
-        color: '#71717a',
-        fontStyle: 'italic',
+        color: '#ffffff',
+        fontWeight: 'medium',
     },
     // Activities
-    activityGrid: {
+    activityRow: {
         flexDirection: 'row',
-        gap: 10,
-        marginTop: 10,
+        marginBottom: 12,
     },
-    activityCard: {
-        flex: 1,
-        backgroundColor: '#18181b', // zinc-900
-        padding: 10,
-        borderRadius: 8,
-    },
-    timeLabel: {
+    timeSlot: {
+        width: 70,
         fontSize: 8,
-        color: '#34d399', // emerald-400
+        color: '#34d399',
         textTransform: 'uppercase',
-        marginBottom: 5,
         letterSpacing: 1,
+        marginTop: 2,
     },
     activityText: {
+        flex: 1,
         fontSize: 10,
-        lineHeight: 1.4,
-        color: '#e4e4e7', // zinc-200
+        lineHeight: 1.5,
+        color: '#d1d5db',
     },
     // Stay
     staySection: {
-        marginTop: 10,
-        padding: 8,
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        marginTop: 15,
+        padding: 10,
+        backgroundColor: 'rgba(52, 211, 153, 0.05)',
         borderRadius: 6,
         flexDirection: 'row',
         alignItems: 'center',
+        border: '1px solid rgba(52, 211, 153, 0.1)',
     },
     stayLabel: {
         fontSize: 8,
-        color: '#71717a',
+        color: '#34d399',
         textTransform: 'uppercase',
-        marginRight: 5,
+        marginRight: 10,
         letterSpacing: 1,
+        fontWeight: 'bold',
     },
     stayText: {
         fontSize: 10,
@@ -125,18 +153,18 @@ const styles = StyleSheet.create({
         bottom: 30,
         left: 40,
         right: 40,
-        borderTop: '1px solid #333',
+        borderTop: '0.5px solid #1f2937',
         paddingTop: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
     footerText: {
-        fontSize: 8,
+        fontSize: 7,
         color: '#52525b',
     },
     brandText: {
-        fontSize: 8,
-        color: '#10b981',
+        fontSize: 7,
+        color: '#34d399',
         textTransform: 'uppercase',
         letterSpacing: 1,
     }
@@ -147,45 +175,59 @@ interface TripPdfProps {
 }
 
 export const TripPdfDocument = ({ data }: TripPdfProps) => (
-    <Document>
+    <Document title={`${data.trip_name} - SafarAI Itinerary`}>
+        {/* Cover Page */}
+        <Page size="A4" style={styles.coverPage}>
+            <View style={styles.coverLine} />
+            <Text style={styles.coverSubtitle}>Autonomous Travel Experience</Text>
+            <Text style={styles.coverTitle}>{data.trip_name}</Text>
+            <View style={styles.coverLine} />
+            <Text style={{ fontSize: 12, color: '#71717a', marginBottom: 5 }}>Prepared for the Modern Voyager</Text>
+            <Text style={{ fontSize: 10, color: '#52525b' }}>{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</Text>
+
+            <View style={styles.coverFooter}>
+                <Text>POWERED BY SAFAR AI CONCIERGE ENGINE</Text>
+            </View>
+        </Page>
+
+        {/* Itinerary Pages */}
         <Page size="A4" style={styles.page}>
             {/* Header */}
             <View style={styles.headerSection}>
                 <View style={styles.badge}>
-                    <Text>AI Curated Trip</Text>
+                    <Text>Confirmed Itinerary</Text>
                 </View>
                 <Text style={styles.title}>{data.trip_name}</Text>
                 <Text style={styles.subtitle}>
-                    Prepared exclusively by SafarAI • {data.days.length} Day Experience
+                    SafarAI Digital Concierge • {data.days.length} Day Bespoke Journey
                 </Text>
             </View>
 
             {/* Content */}
             {data.days.map((day, index) => (
                 <View key={day.day} style={styles.dayContainer} wrap={false}>
-                    <View style={styles.dayCircle} />
                     <View style={styles.dayHeader}>
-                        <Text style={styles.dayTitle}>Day {day.day}</Text>
-                        <Text style={{ ...styles.dayTheme, marginLeft: 10 }}>— {day.theme}</Text>
+                        <Text style={styles.dayTitleIdx}>DAY {day.day}</Text>
+                        <Text style={styles.dayTheme}>{day.theme}</Text>
                     </View>
 
-                    <View style={styles.activityGrid}>
-                        <View style={styles.activityCard}>
-                            <Text style={styles.timeLabel}>Morning</Text>
-                            <Text style={styles.activityText}>{day.morning}</Text>
-                        </View>
-                        <View style={styles.activityCard}>
-                            <Text style={styles.timeLabel}>Afternoon</Text>
-                            <Text style={styles.activityText}>{day.afternoon}</Text>
-                        </View>
-                        <View style={styles.activityCard}>
-                            <Text style={styles.timeLabel}>Evening</Text>
-                            <Text style={styles.activityText}>{day.evening}</Text>
-                        </View>
+                    <View style={styles.activityRow}>
+                        <Text style={styles.timeSlot}>Morning</Text>
+                        <Text style={styles.activityText}>{day.morning}</Text>
+                    </View>
+
+                    <View style={styles.activityRow}>
+                        <Text style={styles.timeSlot}>Afternoon</Text>
+                        <Text style={styles.activityText}>{day.afternoon}</Text>
+                    </View>
+
+                    <View style={styles.activityRow}>
+                        <Text style={styles.timeSlot}>Evening</Text>
+                        <Text style={styles.activityText}>{day.evening}</Text>
                     </View>
 
                     <View style={styles.staySection}>
-                        <Text style={styles.stayLabel}>Accommodation:</Text>
+                        <Text style={styles.stayLabel}>Stay</Text>
                         <Text style={styles.stayText}>{day.stay}</Text>
                     </View>
                 </View>
@@ -193,8 +235,8 @@ export const TripPdfDocument = ({ data }: TripPdfProps) => (
 
             {/* Footer */}
             <View style={styles.footer} fixed>
-                <Text style={styles.footerText}>© 2026 SafarAI Autonomous Travel</Text>
-                <Text style={styles.brandText}>Generated by SafarAI</Text>
+                <Text style={styles.footerText}>© 2026 SafarAI. All rights reserved. Confidential Itinerary.</Text>
+                <Text style={styles.brandText}>safar-ai.com</Text>
             </View>
         </Page>
     </Document>
