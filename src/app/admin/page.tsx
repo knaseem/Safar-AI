@@ -203,7 +203,7 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="p-8 h-screen flex flex-col">
+        <div className="p-8 min-h-screen flex flex-col bg-black">
             {/* Header */}
             <header className="flex justify-between items-end mb-8">
                 <div>
@@ -339,8 +339,8 @@ export default function AdminDashboard() {
             </Card>
 
             {/* Kanban Board */}
-            <div className="flex-1 overflow-x-auto -mx-8 px-8">
-                <div className="flex gap-6 h-full pb-4 min-w-max pr-8">
+            <div className="flex-1 overflow-x-auto -mx-8 px-8 mt-4">
+                <div className="flex gap-6 min-h-[500px] h-auto pb-8 min-w-max pr-8">
                     {/* Incoming / Pending */}
                     <KanbanColumn
                         title="Incoming Requests"
