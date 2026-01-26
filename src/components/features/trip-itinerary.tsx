@@ -22,6 +22,7 @@ import { AtmosphericBackground } from "./atmospheric-background"
 import { useSound } from "./ambient-sound-provider"
 import { useTripAudio } from "@/hooks/use-trip-audio"
 import { ActivityCard, HotelVerificationBadge, MoonIcon } from "./trip-itinerary-items"
+import { VibeBadge } from "./vibe-badge"
 
 export type TripData = {
     trip_name: string
@@ -386,6 +387,17 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                         <span className="uppercase tracking-widest text-[10px] text-indigo-300/60">Stay:</span>
                                         <span className="text-white/80">{day.stay}</span>
                                         <HotelVerificationBadge hotel={day.stay} />
+
+                                        {/* Luxury Intelligence: Vibe Badges */}
+                                        <div className="flex gap-2 ml-4">
+                                            {day.theme.toLowerCase().includes('zen') || day.theme.toLowerCase().includes('nature') ? (
+                                                <VibeBadge label="Zen Sanctuary" type="sleep" />
+                                            ) : day.theme.toLowerCase().includes('luxury') || day.theme.toLowerCase().includes('fine') ? (
+                                                <VibeBadge label="Service Excellence" type="service" />
+                                            ) : (
+                                                <VibeBadge label="Social Hub" type="social" />
+                                            )}
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => {

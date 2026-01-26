@@ -2,10 +2,12 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Calendar, MapPin, Plane, User, Phone, Mail, Briefcase, Info, CheckCircle2, Loader2, Sparkles, ExternalLink } from "lucide-react"
+import { X, Calendar, MapPin, Plane, User, Phone, Mail, Briefcase, Info, CheckCircle2, Loader2, Sparkles, ExternalLink, ShieldAlert } from "lucide-react"
 import { BookingRequest } from "@/types/booking"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { SafetyBadge } from "./safety-badge"
+import { getCoordinates } from "@/lib/geocoding"
 
 interface BookingDetailModalProps {
     booking: any
@@ -68,6 +70,17 @@ export function BookingDetailModal({ booking, isOpen, onClose, onBookingUpdate }
                                 <h3 className="text-2xl font-bold text-white mb-1">{booking.trip_name || booking.destination}</h3>
                                 <p className="text-white/40 text-xs tracking-widest uppercase">Request #{booking.id?.slice(0, 8)}</p>
                             </div>
+
+                            {/* Live Intelligence: Neighborhood Safety */}
+                            {getCoordinates(booking.destination) && (
+                                <div className="hidden md:block">
+                                    <SafetyBadge
+                                        lat={getCoordinates(booking.destination)!.lat}
+                                        lng={getCoordinates(booking.destination)!.lng}
+                                    />
+                                </div>
+                            )}
+
                             <button
                                 onClick={onClose}
                                 className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-colors"
