@@ -149,3 +149,21 @@ export async function getHotelOffers(params: {
         return [];
     }
 }
+/**
+ * Search for locations (cities/airports)
+ */
+export async function searchLocations(keyword: string) {
+    const amadeus = getAmadeus();
+    if (!amadeus) return [];
+
+    try {
+        const response = await (amadeus as any).referenceData.locations.get({
+            keyword,
+            subType: 'CITY,AIRPORT'
+        });
+        return response.data || [];
+    } catch (error) {
+        console.error('Amadeus Location Search Error:', error);
+        return [];
+    }
+}

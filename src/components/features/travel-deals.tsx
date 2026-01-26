@@ -5,6 +5,8 @@ import { motion } from "framer-motion"
 import { Plane, Hotel, ExternalLink, Sparkles, Loader2, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { generateAffiliateLink } from "@/lib/affiliate"
+import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface FlightOffer {
     id: string
@@ -19,13 +21,16 @@ interface HotelOffer {
 
 interface TravelDealsProps {
     archetype: string
+    customDestination?: string
 }
 
-export function TravelDeals({ archetype }: TravelDealsProps) {
+export function TravelDeals({ archetype, customDestination }: TravelDealsProps) {
     const [flights, setFlights] = useState<FlightOffer[]>([])
     const [hotels, setHotels] = useState<HotelOffer[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [selectedFlight, setSelectedFlight] = useState<string | null>(null)
+    const [selectedHotel, setSelectedHotel] = useState<string | null>(null)
 
     const destinations: Record<string, string> = {
         "Adrenaline Junkie": "ZQN", // Queenstown
@@ -34,7 +39,7 @@ export function TravelDeals({ archetype }: TravelDealsProps) {
         "Zen Master": "DPS", // Bali
         "Gastronomy Globetrotter": "CDG" // Paris
     }
-    const dest = destinations[archetype] || "JFK"
+    const dest = customDestination || destinations[archetype] || "JFK"
 
     const handleAffiliateClick = (type: 'flight' | 'hotel', params: any) => {
         const link = generateAffiliateLink(type, params)
@@ -73,7 +78,7 @@ export function TravelDeals({ archetype }: TravelDealsProps) {
         }
 
         fetchDeals()
-    }, [archetype])
+    }, [archetype, customDestination])
 
     if (loading) {
         return (
@@ -146,6 +151,22 @@ export function TravelDeals({ archetype }: TravelDealsProps) {
                                 >
                                     View on Expedia <ExternalLink className="size-3 ml-1" />
                                 </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={cn(
+                                        "h-7 text-[10px] px-2 ml-2 transition-all",
+                                        selectedFlight === (flight.id || idx.toString())
+                                            ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
+                                            : "text-white/40 border-white/10 hover:border-emerald-500/50"
+                                    )}
+                                    onClick={() => {
+                                        setSelectedFlight(selectedFlight === (flight.id || idx.toString()) ? null : (flight.id || idx.toString()))
+                                        toast.success(selectedFlight === (flight.id || idx.toString()) ? "Flight removed" : "Flight selected for Safar")
+                                    }}
+                                >
+                                    {selectedFlight === (flight.id || idx.toString()) ? "Selected" : "Select"}
+                                </Button>
                             </div>
                         </motion.div>
                     ))}
@@ -191,6 +212,22 @@ export function TravelDeals({ archetype }: TravelDealsProps) {
                                         })}
                                     >
                                         Book on Expedia <ExternalLink className="size-3 ml-1" />
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className={cn(
+                                            "h-7 text-[10px] px-2 ml-2 transition-all",
+                                            selectedHotel === (hotel.id || idx.toString())
+                                                ? "bg-cyan-500/20 border-cyan-500 text-cyan-400"
+                                                : "text-white/40 border-white/10 hover:border-cyan-500/50"
+                                        )}
+                                        onClick={() => {
+                                            setSelectedHotel(selectedHotel === (hotel.id || idx.toString()) ? null : (hotel.id || idx.toString()))
+                                            toast.success(selectedHotel === (hotel.id || idx.toString()) ? "Accommodation removed" : "Accommodation selected for Safar")
+                                        }}
+                                    >
+                                        {selectedHotel === (hotel.id || idx.toString()) ? "Selected" : "Select"}
                                     </Button>
                                 </div>
                             </motion.div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion"
-import { X, Heart, Sparkles, Plane, ChevronLeft, ChevronRight, Wand2, Fingerprint } from "lucide-react"
+import { X, Heart, Sparkles, Plane, ChevronLeft, ChevronRight, Wand2, Fingerprint, MapPin, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassportCard } from "./passport-card"
 import { TravelDeals } from "./travel-deals"
@@ -170,6 +170,11 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
     const [direction, setDirection] = useState(0)
     const [saving, setSaving] = useState(false)
     const [showDeals, setShowDeals] = useState(false)
+    const [showPivot, setShowPivot] = useState(false)
+    const [customDestination, setCustomDestination] = useState("")
+    const [pivotSelection, setPivotSelection] = useState<"surprise" | "search" | null>(null)
+    const [resolvedDestination, setResolvedDestination] = useState<{ code: string; name: string } | null>(null)
+    const [isSearching, setIsSearching] = useState(false)
 
     const [scores, setScores] = useState<Record<string, number>>({
         Adventure: 0,
@@ -230,6 +235,11 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
         setDirection(0)
         setShowIntro(true)
         setShowDeals(false)
+        setShowPivot(false)
+        setCustomDestination("")
+        setPivotSelection(null)
+        setResolvedDestination(null)
+        setIsSearching(false)
         x.set(0)
         setScores({ Adventure: 0, Luxury: 0, Culture: 0, Relaxation: 0, Foodie: 0 })
     }
@@ -266,12 +276,36 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
             if (error) throw error
 
             toast.success("Travel DNA Saved", { description: `You are a ${finalArchetype}!`, duration: 3000 })
-            setShowDeals(true)
+            setShowPivot(true)
         } catch (err) {
             console.error(err)
             toast.error("Failed to save", { description: "Please try again." })
         } finally {
             setSaving(false)
+        }
+    }
+
+    const handleSearchDestination = async () => {
+        if (!customDestination.trim()) return
+        setIsSearching(true)
+        try {
+            const res = await fetch(`/api/locations/search?keyword=${encodeURIComponent(customDestination)}`)
+            const data = await res.json()
+            if (data.data && data.data.length > 0) {
+                const first = data.data[0]
+                setResolvedDestination({
+                    code: first.iataCode || first.address.cityCode,
+                    name: first.name || first.address.cityName
+                })
+                setShowDeals(true)
+            } else {
+                toast.error("City not found", { description: "Try a larger city or check spelling." })
+            }
+        } catch (err) {
+            console.error(err)
+            toast.error("Search failed")
+        } finally {
+            setIsSearching(false)
         }
     }
 
@@ -435,24 +469,104 @@ export function VibeCheck({ isOpen, onClose }: VibeCheckProps) {
                         />
                     )}
 
+                    {/* Pivot Screen */}
+                    {showPivot && !showDeals && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-neutral-900 border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden"
+                        >
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                    <Sparkles className="size-5 text-emerald-400" />
+                                </div>
+                                <h2 className="text-xl font-bold text-white tracking-tight">Vibe Applied</h2>
+                            </div>
+
+                            <p className="text-white/60 mb-8 leading-relaxed">
+                                Your <span className="text-emerald-400 font-bold">{getArchetype()}</span> vibe is locked. <br />
+                                Where should we apply it?
+                            </p>
+
+                            <div className="space-y-4">
+                                <button
+                                    onClick={() => setShowDeals(true)}
+                                    className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left flex items-center justify-between group"
+                                >
+                                    <div>
+                                        <div className="text-white font-bold mb-0.5">Surprise Me</div>
+                                        <div className="text-xs text-white/40 italic">Explore the best matching global markets</div>
+                                    </div>
+                                    <div className="size-8 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-black transition-all">
+                                        <ChevronRight className="size-4" />
+                                    </div>
+                                </button>
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-xs text-white/30 uppercase tracking-widest px-1">
+                                        <span>Or choose a destination</span>
+                                    </div>
+                                    <div className="relative">
+                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-emerald-400" />
+                                        <input
+                                            type="text"
+                                            value={customDestination}
+                                            onChange={(e) => setCustomDestination(e.target.value)}
+                                            placeholder="Enter city (e.g. Dubai, London...)"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleSearchDestination()
+                                            }}
+                                        />
+                                        {isSearching && (
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                                <Loader2 className="size-4 animate-spin text-emerald-500" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    {customDestination && (
+                                        <Button
+                                            onClick={handleSearchDestination}
+                                            disabled={isSearching}
+                                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold h-12 rounded-xl mt-2"
+                                        >
+                                            {isSearching ? "Finding city..." : `Search ${customDestination}`} <ArrowRight className="size-4 ml-2" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={onClose}
+                                className="w-full mt-8 text-center text-xs text-white/20 hover:text-white transition-colors"
+                            >
+                                Not now, show me later
+                            </button>
+                        </motion.div>
+                    )}
+
                     {/* Live Deals Screen */}
                     {showDeals && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-neutral-900/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[80vh] scrollbar-hide"
+                            className="bg-neutral-900/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[85vh] scrollbar-hide"
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white mb-1">Passport Verified</h2>
-                                    <p className="text-white/40 text-xs uppercase tracking-widest">Locked onto {getArchetype()} market</p>
+                                    <h2 className="text-2xl font-bold text-white mb-1">
+                                        {resolvedDestination ? `${resolvedDestination.name} Live intelligence` : "Passport Verified"}
+                                    </h2>
+                                    <p className="text-white/40 text-xs uppercase tracking-widest">
+                                        {resolvedDestination ? `Applying ${getArchetype()} vibe to ${resolvedDestination.name}` : `Locked onto ${getArchetype()} market`}
+                                    </p>
                                 </div>
                                 <div className="size-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                                     <Sparkles className="size-6 text-emerald-400" />
                                 </div>
                             </div>
 
-                            <TravelDeals archetype={getArchetype()} />
+                            <TravelDeals archetype={getArchetype()} customDestination={resolvedDestination?.code} />
 
                             <button
                                 onClick={onClose}

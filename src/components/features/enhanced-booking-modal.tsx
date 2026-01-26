@@ -51,6 +51,11 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
         phone: ''
     })
 
+    // Pricing & Live Data
+    const [liveFlightPrice, setLiveFlightPrice] = useState<number | null>(null)
+    const [destIata, setDestIata] = useState<string | null>(null)
+    const [isLivePricing, setIsLivePricing] = useState(false)
+
     // Calculate pricing
     const nights = checkIn && checkOut
         ? Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
@@ -62,8 +67,9 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
 
     const baseFlightPrice = 450 * totalTravelers * flightMultiplier
     const baseHotelPrice = 180 * nights * roomMultiplier
+
     const insurancePrice = travelInsurance ? 89 * totalTravelers : 0
-    const estimatedPrice = Math.round(baseFlightPrice + baseHotelPrice + insurancePrice)
+    const estimatedPrice = Math.round((liveFlightPrice || baseFlightPrice) + baseHotelPrice + insurancePrice)
 
     // Extract destination from trip
     const destination = tripData.trip_name?.split(':')[0]?.split(' ').slice(0, 2).join(' ') ||
@@ -73,6 +79,50 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
     // Validation
     const isStep1Valid = checkIn && checkOut && departureAirport
     const isStep2Valid = contact.firstName && contact.lastName && contact.email && contact.phone
+
+    // Sync Destination IATA Code
+    useEffect(() => {
+        const resolveDest = async () => {
+            if (!destination || destination === 'Destination') return
+            try {
+                const res = await fetch(`/api/locations/search?keyword=${encodeURIComponent(destination)}`)
+                const data = await res.json()
+                if (data.data && data.data.length > 0) {
+                    setDestIata(data.data[0].iataCode || data.data[0].address.cityCode)
+                }
+            } catch (err) {
+                console.error('Dest resolve error:', err)
+            }
+        }
+        resolveDest()
+    }, [destination])
+
+    // Fetch Live Pricing on change
+    useEffect(() => {
+        const fetchPricing = async () => {
+            if (!departureAirport || !destIata || !checkIn) return
+
+            setIsLivePricing(true)
+            try {
+                const depDate = checkIn.toISOString().split('T')[0]
+                const res = await fetch(`/api/flights/search?origin=${departureAirport.code}&destination=${destIata}&departureDate=${depDate}&adults=${travelers.adults}`)
+                const data = await res.json()
+
+                if (data.data && data.data.length > 0) {
+                    // Get the cheapest offer and multiply by class if needed (Amadeus returns actual prices)
+                    const cheapest = data.data[0]
+                    setLiveFlightPrice(parseFloat(cheapest.price.total))
+                }
+            } catch (err) {
+                console.error('Pricing error:', err)
+            } finally {
+                setIsLivePricing(false)
+            }
+        }
+
+        const timer = setTimeout(fetchPricing, 500) // Debounce
+        return () => clearTimeout(timer)
+    }, [departureAirport, destIata, checkIn, travelers.adults, flightClass])
 
     // Processing animation and API call
     useEffect(() => {
@@ -350,8 +400,11 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, onClos
                                             <span className="text-emerald-400">${insurancePrice}</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between text-white/70 pt-3 border-t border-white/10 mt-3">
-                                        <span className="font-semibold text-white">Estimated Total</span>
+                                    <div className="flex justify-between text-white/70 pt-3 border-t border-white/10 mt-3 items-center">
+                                        <div>
+                                            <span className="font-semibold text-white">Estimated Total</span>
+                                            {isLivePricing && <span className="ml-2 text-[10px] text-emerald-400 animate-pulse tracking-widest uppercase">Live Syncing...</span>}
+                                        </div>
                                         <span className="text-emerald-400 font-bold text-xl">${estimatedPrice.toLocaleString()}</span>
                                     </div>
                                 </div>
