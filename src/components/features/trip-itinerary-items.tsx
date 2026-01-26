@@ -102,7 +102,7 @@ export function ActivityCard({ time, title, destination, isActive = false, onBoo
                     onClick={handleBook}
                     className="flex items-center gap-1 text-[10px] bg-emerald-500 text-black px-2 py-1 rounded hover:bg-emerald-400 font-bold"
                 >
-                    Book <ArrowRight className="size-3" />
+                    Book Activity <ArrowRight className="size-3" />
                 </button>
             </div>
         </div >

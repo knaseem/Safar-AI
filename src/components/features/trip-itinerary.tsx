@@ -439,9 +439,9 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                             setPortalTitle(`Booking: ${hotel}`)
                                             setIsPortalOpen(true)
                                         }}
-                                        className="opacity-0 group-hover/stay:opacity-100 flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded transition-all hover:bg-emerald-500/20"
+                                        className="flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded transition-all hover:bg-emerald-500/20"
                                     >
-                                        Check Rates <ArrowRight className="size-3" />
+                                        Book Hotel <ArrowRight className="size-3" />
                                     </button>
                                 </div>
                             </motion.div>
