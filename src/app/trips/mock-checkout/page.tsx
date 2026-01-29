@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Plane, Building2, CreditCard, ShieldCheck } from "lucide-react"
+import { Plane, Building2, CreditCard, ShieldCheck, Loader2 } from "lucide-react"
 
-export default function MockCheckoutPage() {
+function MockCheckoutContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const reference = searchParams.get('reference')
@@ -89,5 +89,18 @@ export default function MockCheckoutPage() {
                 This is a development mock. No real charges will be made.
             </p>
         </div>
+    )
+}
+
+export default function MockCheckoutPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+                <Loader2 className="size-12 text-slate-200 animate-spin mb-4" />
+                <h1 className="text-xl font-medium text-slate-400">Loading secure checkout...</h1>
+            </div>
+        }>
+            <MockCheckoutContent />
+        </Suspense>
     )
 }

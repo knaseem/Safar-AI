@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 
-export default function BookingSuccessPage() {
+function BookingSuccessContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const [isUpdating, setIsUpdating] = useState(true)
@@ -118,5 +118,18 @@ export default function BookingSuccessPage() {
                 </div>
             </motion.div>
         </div>
+    )
+}
+
+export default function BookingSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+                <Loader2 className="size-12 text-emerald-500 animate-spin mb-4" />
+                <h1 className="text-xl font-medium text-white">Loading confirmation details...</h1>
+            </div>
+        }>
+            <BookingSuccessContent />
+        </Suspense>
     )
 }
