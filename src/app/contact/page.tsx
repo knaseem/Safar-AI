@@ -78,7 +78,7 @@ export default function ContactPage() {
                                         setSubject("")
                                         setMessage("")
                                     }}
-                                    className="border-white/20 text-white hover:bg-white/10"
+                                    className="bg-white text-black hover:bg-white/90 font-bold px-8"
                                 >
                                     Send Another Message
                                 </Button>
