@@ -20,18 +20,21 @@ const SoundContext = createContext<SoundContextType>({
 
 export const useSound = () => useContext(SoundContext)
 
-// Mock assets - in production these would be hosted files
-const SOUND_ASSETS = {
-    city: 'https://cdn.freesound.org/previews/244/244131_4388656-lq.mp3', // Distant city drone
-    nature: 'https://cdn.freesound.org/previews/530/530415_1648170-lq.mp3', // Forest birds/wind
-    ocean: 'https://cdn.freesound.org/previews/398/398246_5159489-lq.mp3', // Gentle waves
-    quiet: '' // Silence
+// Local sound files
+const SOUND_ASSETS: Record<string, string> = {
+    city: '/sounds/city.ogg',
+    nature: '/sounds/nature.mp3',
+    ocean: '/sounds/ocean.ogg',
+    desert: '/sounds/desert.ogg',
+    cafe: '/sounds/cafe.ogg',
+    quiet: ''
 }
 
 export function AmbientSoundProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<SoundTheme>('quiet')
+    const [theme, setTheme] = useState<SoundTheme>('ocean') // Default to ocean (soothing waves)
     const [isMuted, setIsMuted] = useState(true)
     const audioRef = useRef<HTMLAudioElement | null>(null)
+    const isPlayingRef = useRef(false) // Ref to track if we're in the middle of a play operation
 
     // Initial setup
     useEffect(() => {
@@ -47,81 +50,66 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
         }
     }, [])
 
-    // Theme change logic with cross-fade
-    // Reliable CDN assets
-    const SOUND_ASSETS: Record<string, string> = {
-        city: '/sounds/city.ogg', // Distant Highway
-        nature: '/sounds/nature.ogg', // Summer Forest
-        ocean: '/sounds/ocean.ogg', // Waves
-        desert: '/sounds/desert.ogg', // Summer Ambience (Windy)
-        cafe: '/sounds/cafe.ogg', // Coffee Shop
-        quiet: ''
-    }
-
     // Effect for volume cross-fading ONLY (not playing/pausing)
     useEffect(() => {
         if (!audioRef.current) return
 
         // If muted or quiet, desired vol is 0
-        const targetVol = (isMuted || theme === 'quiet') ? 0 : 0.3
+        const targetVol = (isMuted || theme === 'quiet') ? 0 : 0.4
 
         const fade = setInterval(() => {
             if (!audioRef.current) return
 
-            // Current volume alignment
             const current = audioRef.current.volume
 
-            if (Math.abs(current - targetVol) < 0.02) {
+            if (Math.abs(current - targetVol) < 0.05) {
                 audioRef.current.volume = targetVol
                 if (targetVol === 0 && !audioRef.current.paused) {
                     audioRef.current.pause()
+                    isPlayingRef.current = false
                 }
                 clearInterval(fade)
             } else if (current < targetVol) {
-                audioRef.current.volume += 0.02
+                audioRef.current.volume += 0.05
             } else {
-                audioRef.current.volume -= 0.02
+                audioRef.current.volume -= 0.05
             }
-        }, 100)
+        }, 50)
 
         return () => clearInterval(fade)
     }, [isMuted, theme])
 
-    // Effect for changing source track
+    // Effect for changing source track (only when already playing and theme changes)
     useEffect(() => {
-        if (theme === 'quiet' || !audioRef.current) return
+        if (theme === 'quiet' || !audioRef.current || isMuted) return
+        if (!isPlayingRef.current) return // Don't play if not already playing
 
-        // Only switch source if different
-        // Note: In a real app we'd have double buffers for seamless crossfade
-        // Here we just swap src
+        // User changed theme while already listening
         audioRef.current.src = SOUND_ASSETS[theme]
-
-        if (!isMuted) {
-            const playPromise = audioRef.current.play()
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    console.log("Auto-play blocked, muting.")
-                    setIsMuted(true)
-                })
-            }
-        }
+        audioRef.current.play().catch((e) => {
+            console.log("Theme switch interrupted:", e.name)
+        })
     }, [theme])
 
-    const toggleMute = () => {
+    const toggleMute = async () => {
+        if (!audioRef.current) return
+
         if (isMuted) {
-            setIsMuted(false)
-            // IMMEDIATE PLAY on user interaction
-            if (audioRef.current && theme !== 'quiet') {
+            // Unmuting - start playback
+            try {
+                isPlayingRef.current = true
                 audioRef.current.src = SOUND_ASSETS[theme]
-                audioRef.current.volume = 0
-                audioRef.current.play().then(() => {
-                    // Playback started successfully
-                }).catch((e) => {
-                    console.error("Playback failed:", e)
-                    setIsMuted(true)
-                })
+                audioRef.current.volume = 0.2 // Start audible, will fade to 0.4
+                await audioRef.current.play()
+                setIsMuted(false)
+                console.log("SafarAI Soundscape playing:", theme)
+            } catch (e) {
+                console.error("Playback failed:", e)
+                isPlayingRef.current = false
+                setIsMuted(true)
             }
         } else {
+            // Muting - will fade out via effect
             setIsMuted(true)
         }
     }
@@ -129,21 +117,6 @@ export function AmbientSoundProvider({ children }: { children: React.ReactNode }
     return (
         <SoundContext.Provider value={{ setTheme, isMuted, toggleMute }}>
             {children}
-
-            {/* Global Mute Toggle (Fixed bottom right or integrated in Navbar) */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <button
-                    onClick={toggleMute}
-                    className="p-3 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/70 hover:text-emerald-400 hover:border-emerald-500/30 transition-all shadow-lg group"
-                >
-                    {isMuted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
-
-                    {/* Tooltip */}
-                    <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-black/80 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        {isMuted ? "SafarAI Soundscapes" : "Mute Ambience"}
-                    </span>
-                </button>
-            </div>
         </SoundContext.Provider>
     )
 }

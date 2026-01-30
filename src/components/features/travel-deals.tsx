@@ -162,15 +162,22 @@ export function TravelDeals({ archetype, customDestination, originCityCode = "CL
     }
 
     // fallback data if keys are not working yet
+    // Base prices before markup for transparency
+    const FALLBACK_FLIGHT_BASE_1 = 1180; // Will become ~$1,239 with 5% markup
+    const FALLBACK_FLIGHT_BASE_2 = 930;  // Will become ~$976.50 with 5% markup
+    const FALLBACK_HOTEL_BASE_1 = 1680;  // Will become ~$1,848 with 10% markup
+    const FALLBACK_HOTEL_BASE_2 = 1090;  // Will become ~$1,199 with 10% markup
+
     const displayFlights = flights.length > 0 ? flights : [
-        { id: "1", price: { total: "1,240", currency: "USD" }, itineraries: [{ duration: "PT14H" }] },
-        { id: "2", price: { total: "980", currency: "USD" }, itineraries: [{ duration: "PT16H" }] }
+        { id: "1", price: { total: (FALLBACK_FLIGHT_BASE_1 * 1.05).toFixed(2), base_total: FALLBACK_FLIGHT_BASE_1.toString(), currency: "USD" }, itineraries: [{ duration: "PT14H" }] },
+        { id: "2", price: { total: (FALLBACK_FLIGHT_BASE_2 * 1.05).toFixed(2), base_total: FALLBACK_FLIGHT_BASE_2.toString(), currency: "USD" }, itineraries: [{ duration: "PT16H" }] }
     ]
 
     const displayHotels = hotels.length > 0 ? hotels : [
-        { hotel: { name: "Aman Tokyo", hotelId: "1" }, offers: [{ price: { total: "1,850", currency: "USD" } }] },
-        { hotel: { name: "Four Seasons", hotelId: "2" }, offers: [{ price: { total: "1,200", currency: "USD" } }] }
+        { hotel: { name: "Aman Tokyo", hotelId: "1" }, offers: [{ price: { total: (FALLBACK_HOTEL_BASE_1 * 1.10).toFixed(2), base_total: FALLBACK_HOTEL_BASE_1.toString(), currency: "USD" } }] },
+        { hotel: { name: "Four Seasons", hotelId: "2" }, offers: [{ price: { total: (FALLBACK_HOTEL_BASE_2 * 1.10).toFixed(2), base_total: FALLBACK_HOTEL_BASE_2.toString(), currency: "USD" } }] }
     ]
+
 
     return (
         <div className="space-y-6">
@@ -318,7 +325,7 @@ export function TravelDeals({ archetype, customDestination, originCityCode = "CL
                                         onClick={() => handleAffiliateClick('flight', {
                                             origin: originCityCode,
                                             destination: dest,
-                                            checkIn: '2026-06-01'
+                                            checkIn: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
                                         })}
                                     >
                                         Compare <ExternalLink className="size-3 ml-1" />

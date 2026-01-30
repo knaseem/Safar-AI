@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { TravelHUD } from "@/components/features/travel-hud";
 import { AmbientSoundProvider } from "@/components/features/ambient-sound-provider";
+import { FloatingChatBubble } from "@/components/features/floating-chat-bubble";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
           <AmbientSoundProvider>
             <TravelHUD />
             {children}
+            <FloatingChatBubble />
           </AmbientSoundProvider>
         </AuthProvider>
         <Toaster position="top-center" richColors />

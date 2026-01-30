@@ -5,10 +5,24 @@ import Link from "next/link"
 import { useScroll, useMotionValueEvent, motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Plane, User, LogOut, Map, ChevronDown } from "lucide-react"
+import { Plane, User, LogOut, Map, ChevronDown, Volume2, VolumeX } from "lucide-react"
 import { VibeCheck } from "@/components/features/vibe-check"
 import { AuthModal } from "@/components/features/auth-modal"
 import { useAuth } from "@/lib/auth-context"
+import { useSound } from "@/components/features/ambient-sound-provider"
+
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+    return (
+        <Link
+            href={href}
+            className="relative group px-1 py-1"
+        >
+            <span className="relative z-10 hover:text-white transition-colors duration-300">{children}</span>
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400 group-hover:w-full transition-all duration-300 ease-out" />
+            <span className="absolute inset-0 bg-white/5 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+        </Link>
+    )
+}
 
 export function Navbar() {
     const { scrollY } = useScroll()
@@ -17,6 +31,7 @@ export function Navbar() {
     const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
     const { user, loading, signOut } = useAuth()
+    const { isMuted, toggleMute } = useSound()
 
     useMotionValueEvent(scrollY, "change", (latest) => {
         setScrolled(latest > 50)
@@ -61,14 +76,13 @@ export function Navbar() {
                         </span>
                     </Link>
 
-                    <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
-                        <Link href="#destinations" className="hover:text-white transition-colors">Destinations</Link>
-                        <Link href="#experience" className="hover:text-white transition-colors">The Experience</Link>
-                        <Link href="#membership" className="hover:text-white transition-colors">Membership</Link>
-                        <Link href="/budget" className="hover:text-white transition-colors">Budget</Link>
-                        <Link href="/world" className="hover:text-white transition-colors">World</Link>
-                        <Link href="/trends" className="hover:text-amber-400 transition-colors">Trends</Link>
-                        <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-white/70">
+                        <NavLink href="#destinations">Destinations</NavLink>
+                        <NavLink href="#experience">The Experience</NavLink>
+                        <NavLink href="#membership">Membership</NavLink>
+                        <NavLink href="/budget">Planning</NavLink>
+                        <NavLink href="/trends">Trends</NavLink>
+                        <NavLink href="/blog">Blog</NavLink>
                     </nav>
 
                     <div className="flex items-center gap-4">
@@ -148,12 +162,23 @@ export function Navbar() {
                                 Sign In
                             </Button>
                         )}
+
+
+                        {/* Ambient Sound Toggle */}
+                        <button
+                            onClick={toggleMute}
+                            className="p-2 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                            title={isMuted ? "Play Ambience" : "Mute Ambience"}
+                        >
+                            {isMuted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
+                        </button>
+
                         <Button variant="premium" size="sm" onClick={() => setIsVibeCheckOpen(true)} className="!bg-white !text-black font-bold hover:!bg-gray-100">
                             Find My Travel Vibe
                         </Button>
                     </div>
                 </div>
-            </header>
+            </header >
 
             <VibeCheck isOpen={isVibeCheckOpen} onClose={() => setIsVibeCheckOpen(false)} />
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

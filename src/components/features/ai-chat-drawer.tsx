@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Sparkles, User, Bot, Command } from 'lucide-react'
+import { X, Send, Sparkles, User, Bot, Command, Mic, MicOff, Volume2, VolumeX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TripData } from './trip-itinerary'
 import { toast } from 'sonner'
+import { useVoiceInput } from '@/hooks/use-voice-input'
+import { useTextToSpeech } from '@/hooks/use-text-to-speech'
 
 interface AIChatDrawerProps {
     isOpen: boolean
@@ -36,6 +38,11 @@ export function AIChatDrawer({ isOpen, onClose, tripData }: AIChatDrawerProps) {
     const [isLoading, setIsLoading] = useState(false)
     const scrollRef = useRef<HTMLDivElement>(null)
     const [mounted, setMounted] = useState(false)
+    const [autoSpeak, setAutoSpeak] = useState(true)
+
+    // Voice hooks
+    const { isListening, transcript, error: voiceError, isSupported: sttSupported, startListening, stopListening, resetTranscript } = useVoiceInput()
+    const { speak, stop: stopSpeaking, isSpeaking, isSupported: ttsSupported } = useTextToSpeech()
 
     useEffect(() => {
         setMounted(true)
@@ -46,6 +53,37 @@ export function AIChatDrawer({ isOpen, onClose, tripData }: AIChatDrawerProps) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight
         }
     }, [messages])
+
+    // Handle voice transcript
+    useEffect(() => {
+        if (transcript && !isListening) {
+            setInput(transcript)
+            // Auto-send after voice input completes
+            setTimeout(() => {
+                if (transcript.trim()) {
+                    handleSend(transcript)
+                    resetTranscript()
+                }
+            }, 300)
+        }
+    }, [transcript, isListening])
+
+    // Auto-speak AI responses
+    useEffect(() => {
+        if (autoSpeak && ttsSupported && messages.length > 0) {
+            const lastMessage = messages[messages.length - 1]
+            if (lastMessage.role === 'model') {
+                speak(lastMessage.content)
+            }
+        }
+    }, [messages, autoSpeak, ttsSupported])
+
+    // Show voice errors
+    useEffect(() => {
+        if (voiceError) {
+            toast.error("Voice Error", { description: voiceError })
+        }
+    }, [voiceError])
 
     const handleSend = async (text: string = input) => {
         if (!text.trim() || isLoading) return
@@ -185,28 +223,85 @@ export function AIChatDrawer({ isOpen, onClose, tripData }: AIChatDrawerProps) {
 
                         {/* Input Area */}
                         <div className="p-4 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+                            {/* Auto-speak toggle */}
+                            {ttsSupported && (
+                                <div className="flex items-center justify-end gap-2 mb-3">
+                                    <button
+                                        onClick={() => {
+                                            if (isSpeaking) stopSpeaking()
+                                            setAutoSpeak(!autoSpeak)
+                                        }}
+                                        className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] uppercase tracking-wider transition-all ${autoSpeak
+                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                                : 'bg-white/5 text-white/40 border border-white/10'
+                                            }`}
+                                    >
+                                        {autoSpeak ? <Volume2 className="size-3" /> : <VolumeX className="size-3" />}
+                                        Auto-speak {autoSpeak ? 'ON' : 'OFF'}
+                                    </button>
+                                </div>
+                            )}
+
                             <form
                                 onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                                className="relative flex items-center"
+                                className="relative flex items-center gap-2"
                             >
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-white/5 text-white/30 hidden md:block">
-                                    <Command className="size-3" />
+                                {/* Microphone button */}
+                                {sttSupported && (
+                                    <button
+                                        type="button"
+                                        onClick={() => isListening ? stopListening() : startListening()}
+                                        className={`relative p-3 rounded-xl transition-all ${isListening
+                                                ? 'bg-red-500 text-white'
+                                                : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        {isListening && (
+                                            <motion.div
+                                                className="absolute inset-0 rounded-xl bg-red-500"
+                                                animate={{ scale: [1, 1.2, 1], opacity: [1, 0.5, 1] }}
+                                                transition={{ duration: 1, repeat: Infinity }}
+                                            />
+                                        )}
+                                        {isListening ? <MicOff className="size-5 relative z-10" /> : <Mic className="size-5" />}
+                                    </button>
+                                )}
+
+                                <div className="flex-1 relative">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-white/5 text-white/30 hidden md:block">
+                                        <Command className="size-3" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder={isListening ? "Listening..." : "Ask your concierge..."}
+                                        disabled={isListening}
+                                        className={`w-full bg-neutral-900 border rounded-2xl pl-4 md:pl-12 pr-12 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 hover:bg-white/5 transition-colors disabled:opacity-50 ${isListening ? 'border-red-500/50' : 'border-white/10'
+                                            }`}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!input.trim() || isLoading || isListening}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-emerald-500 text-black hover:bg-emerald-400 disabled:opacity-50 disabled:bg-white/10 disabled:text-white/20 transition-all font-medium"
+                                    >
+                                        <Send className="size-4" />
+                                    </button>
                                 </div>
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Ask your concierge..."
-                                    className="w-full bg-neutral-900 border border-white/10 rounded-2xl pl-4 md:pl-12 pr-12 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 hover:bg-white/5 transition-colors"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={!input.trim() || isLoading}
-                                    className="absolute right-2 p-2 rounded-xl bg-emerald-500 text-black hover:bg-emerald-400 disabled:opacity-50 disabled:bg-white/10 disabled:text-white/20 transition-all font-medium"
-                                >
-                                    <Send className="size-4" />
-                                </button>
                             </form>
+
+                            {/* Listening indicator */}
+                            {isListening && (
+                                <div className="mt-2 flex items-center justify-center gap-2 text-red-400 text-xs">
+                                    <div className="flex gap-0.5">
+                                        <motion.div className="w-1 h-3 bg-red-400 rounded-full" animate={{ scaleY: [1, 1.5, 1] }} transition={{ duration: 0.5, repeat: Infinity, delay: 0 }} />
+                                        <motion.div className="w-1 h-3 bg-red-400 rounded-full" animate={{ scaleY: [1, 1.8, 1] }} transition={{ duration: 0.5, repeat: Infinity, delay: 0.1 }} />
+                                        <motion.div className="w-1 h-3 bg-red-400 rounded-full" animate={{ scaleY: [1, 1.3, 1] }} transition={{ duration: 0.5, repeat: Infinity, delay: 0.2 }} />
+                                        <motion.div className="w-1 h-3 bg-red-400 rounded-full" animate={{ scaleY: [1, 1.6, 1] }} transition={{ duration: 0.5, repeat: Infinity, delay: 0.3 }} />
+                                    </div>
+                                    <span>Speak now...</span>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 </>

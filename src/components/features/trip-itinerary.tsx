@@ -444,7 +444,7 @@ export function TripItinerary({ data, onReset, isHalal = false, isShared = false
                                         const flightLink = generateAffiliateLink('flight', {
                                             origin: data.selection?.flight.origin,
                                             destination: data.selection?.flight.destination,
-                                            checkIn: '2026-06-01' // Use selected date if available
+                                            checkIn: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
                                         })
                                         // window.open(flightLink, '_blank') // Replaced with ConciergePortal
                                         setPortalUrl(flightLink)

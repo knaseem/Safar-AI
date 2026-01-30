@@ -102,9 +102,15 @@ export async function searchFlights(params: {
 
         // Fallback for Demo: If no flights found in test mode, return a mock offer to allow UI verification
         if (data.length === 0 && process.env.AMADEUS_HOSTNAME === 'test') {
+            const basePrice = 300 + Math.random() * 1000;
+            const markedUpPrice = basePrice * 1.05; // 5% flight markup
             data = [{
                 id: `mock-${params.destinationLocationCode.toLowerCase()}-1`,
-                price: { total: (300 + Math.random() * 1000).toFixed(2), currency: 'USD' },
+                price: {
+                    total: markedUpPrice.toFixed(2),
+                    base_total: basePrice.toFixed(2),
+                    currency: 'USD'
+                },
                 itineraries: [{
                     duration: 'PT12H',
                     segments: [{

@@ -19,7 +19,27 @@ export async function GET(request: NextRequest) {
                 checkInDate,
                 checkOutDate
             });
-            return NextResponse.json({ data: offers });
+
+            // Apply Profit Markups
+            const { applyMarkup } = await import('@/lib/pricing');
+            const offersWithMarkup = offers.map((offer: any) => {
+                if (offer.offers) {
+                    return {
+                        ...offer,
+                        offers: offer.offers.map((opt: any) => ({
+                            ...opt,
+                            price: {
+                                ...opt.price,
+                                base_total: opt.price.total,
+                                total: applyMarkup(opt.price.total, 'hotel').toFixed(2)
+                            }
+                        }))
+                    };
+                }
+                return offer;
+            });
+
+            return NextResponse.json({ data: offersWithMarkup });
         }
 
         // Otherwise, search for hotels in a city

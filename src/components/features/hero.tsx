@@ -277,8 +277,8 @@ export function Hero({ initialPrompt }: HeroProps) {
                                 e.currentTarget.style.display = 'none'
                             }}
                         />
-                        {/* Location Credit Overlay */}
-                        <div className="absolute bottom-6 right-8 z-20 flex flex-col items-end text-white/50 text-right">
+                        {/* Location Credit Overlay - Centered */}
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center text-white/50 text-center">
                             <span className="text-xs uppercase tracking-[0.2em] font-light border-b border-white/20 pb-1 mb-1">Location</span>
                             <span className="text-sm font-medium text-white/90">{activeImages[currentImageIndex].location}</span>
                             <span className="text-[10px] text-white/30">Photo by {activeImages[currentImageIndex].credit}</span>
@@ -361,17 +361,6 @@ export function Hero({ initialPrompt }: HeroProps) {
                     </div>
                 </motion.div>
             </div>
-
-            {/* Scroll indicator */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 1 }}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/50"
-            >
-                <span className="text-xs uppercase tracking-widest">Scroll to Explore</span>
-                <div className="w-px h-12 bg-gradient-to-b from-white/50 to-transparent" />
-            </motion.div>
         </section>
     )
 }

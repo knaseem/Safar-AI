@@ -39,7 +39,7 @@ export async function createFlightSearch(params: {
             offers: [
                 {
                     id: 'off_mock_1',
-                    total_amount: '450.00',
+                    total_amount: '517.50', // Mock with 15% markup manual for demo
                     total_currency: 'USD',
                     owner: { name: 'Safar Airways' },
                     itineraries: []
@@ -65,7 +65,19 @@ export async function createFlightSearch(params: {
             passengers: Array(params.adults).fill({ type: 'adult' }),
             cabin_class: 'economy',
         });
-        return response.data;
+
+        // Apply Markups to real search results
+        const { applyMarkup } = await import('./pricing');
+        const dataWithMarkup = {
+            ...response.data,
+            offers: response.data.offers.map((offer: any) => ({
+                ...offer,
+                base_amount: offer.total_amount,
+                total_amount: applyMarkup(offer.total_amount, 'flight').toFixed(2)
+            }))
+        };
+
+        return dataWithMarkup;
     } catch (error) {
         console.error('Duffel Search Error:', error);
         throw error;

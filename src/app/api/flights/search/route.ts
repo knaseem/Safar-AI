@@ -27,7 +27,23 @@ export async function GET(request: NextRequest) {
             max: 10
         });
 
-        return NextResponse.json({ data: flights });
+        // Apply Profit Markups
+        const { applyMarkup } = await import('@/lib/pricing');
+        const flightsWithMarkup = flights.map((flight: any) => {
+            if (flight.price) {
+                return {
+                    ...flight,
+                    price: {
+                        ...flight.price,
+                        base_total: flight.price.total, // Store original for reference if needed
+                        total: applyMarkup(flight.price.total, 'flight').toFixed(2)
+                    }
+                };
+            }
+            return flight;
+        });
+
+        return NextResponse.json({ data: flightsWithMarkup });
     } catch (error) {
         console.error('Flight Search Route Error:', error);
         return NextResponse.json(
