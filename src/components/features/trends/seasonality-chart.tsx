@@ -1,9 +1,9 @@
 "use client"
 
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
-import { AnalyticsData } from "@/lib/amadeus-trends"
+import { SeasonalityData } from "@/lib/amadeus-trends"
 
-export function SeasonalityChart({ data }: { data: AnalyticsData[] }) {
+export function SeasonalityChart({ data }: { data: SeasonalityData[] }) {
     if (!data || data.length === 0) return <div className="h-full flex items-center justify-center text-white/20">Loading data...</div>
 
     return (
@@ -17,7 +17,7 @@ export function SeasonalityChart({ data }: { data: AnalyticsData[] }) {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                 <XAxis
-                    dataKey="period"
+                    dataKey="month"
                     stroke="#ffffff40"
                     fontSize={12}
                     tickLine={false}
@@ -36,7 +36,7 @@ export function SeasonalityChart({ data }: { data: AnalyticsData[] }) {
                 />
                 <Area
                     type="monotone"
-                    dataKey="score"
+                    dataKey="demand"
                     stroke="#3b82f6"
                     strokeWidth={3}
                     fillOpacity={1}
