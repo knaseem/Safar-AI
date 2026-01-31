@@ -11,7 +11,7 @@ export async function POST(req: Request) {
             from: 'SafarAI Contact <support@safar-ai.co>', // Verified domain sender
             to: (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'knaseem@safar-ai.co').split(',').map(e => e.trim()),
             subject: `Contact Form: ${subject || 'New Message'}`,
-            replyTo: email, // So you can reply directly to the user
+            // replyTo removed as requested
             text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
             html: `
                 <!DOCTYPE html>
@@ -24,12 +24,21 @@ export async function POST(req: Request) {
                     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                         
                         <!-- Header -->
-                        <div style="background-color: #000000; padding: 20px 40px; text-align: center; border-bottom: 2px solid #D4AF37;">
-                            <h1 style="margin: 0; font-family: 'Playfair Display', serif; color: #ffffff; font-size: 28px; letter-spacing: 1px;">
-                                SAFAR<span style="color: #D4AF37;">AI</span>
-                            </h1>
-                            <p style="margin: 5px 0 0; color: #888888; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">Premium Travel Ops</p>
-                        </div>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #000000; padding: 20px 40px; border-bottom: 2px solid #D4AF37;">
+                            <tr>
+                                <td width="50" style="vertical-align: middle;">
+                                    <div style="background-color: #ffffff; width: 32px; height: 32px; border-radius: 6px; text-align: center; line-height: 32px;">
+                                        <!-- Plane Icon SVG -->
+                                        <div style="color: #000000; font-size: 20px; line-height: 32px;">✈</div>
+                                    </div>
+                                </td>
+                                <td style="vertical-align: middle;">
+                                    <h1 style="margin: 0; font-family: 'Playfair Display', serif; color: #ffffff; font-size: 24px; letter-spacing: 1px;">
+                                        SAFAR<span style="color: #D4AF37;">AI</span>
+                                    </h1>
+                                </td>
+                            </tr>
+                        </table>
 
                         <!-- Content -->
                         <div style="padding: 40px;">
