@@ -34,7 +34,7 @@ export async function POST(req: Request) {
                                 </td>
                                 <td style="vertical-align: middle;">
                                     <h1 style="margin: 0; font-family: 'Playfair Display', serif; color: #ffffff; font-size: 24px; letter-spacing: 1px;">
-                                        SAFAR<span style="color: #D4AF37;">AI</span>
+                                        Safar<span style="color: #a3a3a3;">AI</span>
                                     </h1>
                                 </td>
                             </tr>
@@ -53,9 +53,9 @@ export async function POST(req: Request) {
                                     <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; color: #000000; font-size: 16px;">${name}</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; color: #888888; font-size: 12px; font-weight: 600; text-transform: uppercase;">Email</td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; color: #888888; font-size: 12px; font-weight: 600; text-transform: uppercase;">From Email</td>
                                     <td style="padding: 10px 0; border-bottom: 1px solid #eeeeee; color: #000000; font-size: 16px;">
-                                        <a href="mailto:${email}" style="color: #D4AF37; text-decoration: none;">${email}</a>
+                                        <a href="mailto:${email}" style="color: #000000; text-decoration: none;">${email}</a>
                                     </td>
                                 </tr>
                                 <tr>
