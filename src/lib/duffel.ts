@@ -155,3 +155,213 @@ export async function searchStays(params: {
         return [];
     }
 }
+
+// ============================================
+// ORDER MANAGEMENT APIs (Custom Checkout)
+// ============================================
+
+export interface Passenger {
+    type: 'adult' | 'child' | 'infant_without_seat';
+    given_name: string;
+    family_name: string;
+    gender: 'male' | 'female';
+    born_on: string; // YYYY-MM-DD
+    email: string;
+    phone_number?: string;
+    title?: 'mr' | 'ms' | 'mrs' | 'miss' | 'dr';
+}
+
+export interface CreateOrderParams {
+    offerId: string;
+    passengers: Passenger[];
+    paymentType: 'balance' | 'arc_bsp_cash';
+    totalAmount: string; // Your marked-up price
+    currency: string;
+    metadata?: Record<string, string>;
+}
+
+/**
+ * Create an order (Book a flight with payment)
+ * This is where YOUR marked-up price gets charged
+ */
+export async function createOrder(params: CreateOrderParams) {
+    const duffel = getDuffel();
+
+    if (!duffel) {
+        // Mock order for testing without API key
+        return {
+            id: 'ord_mock_' + Math.random().toString(36).substring(7),
+            booking_reference: 'SFRMCK',
+            status: 'confirmed',
+            total_amount: params.totalAmount,
+            total_currency: params.currency,
+            passengers: params.passengers,
+            created_at: new Date().toISOString(),
+        };
+    }
+
+    try {
+        const response = await duffel.orders.create({
+            type: 'instant',
+            selected_offers: [params.offerId],
+            passengers: params.passengers.map((p, i) => ({
+                ...p,
+                id: `pas_${i}`, // Duffel requires passenger IDs
+            })),
+            payments: [{
+                type: params.paymentType,
+                amount: params.totalAmount,
+                currency: params.currency,
+            }],
+            metadata: params.metadata,
+        } as any);
+
+        return response.data;
+    } catch (error) {
+        console.error('Duffel Create Order Error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get a single order by ID
+ */
+export async function getOrder(orderId: string) {
+    const duffel = getDuffel();
+
+    if (!duffel) {
+        return {
+            id: orderId,
+            booking_reference: 'SFRMCK',
+            status: 'confirmed',
+            total_amount: '525.00',
+            total_currency: 'USD',
+            created_at: new Date().toISOString(),
+            slices: [],
+            passengers: [],
+        };
+    }
+
+    try {
+        const response = await duffel.orders.get(orderId);
+        return response.data;
+    } catch (error) {
+        console.error('Duffel Get Order Error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get cancellation quote for an order (check refund amount)
+ */
+export async function getOrderCancellationQuote(orderId: string) {
+    const duffel = getDuffel();
+
+    if (!duffel) {
+        return {
+            id: 'occ_mock_' + Math.random().toString(36).substring(7),
+            order_id: orderId,
+            refund_amount: '500.00',
+            refund_currency: 'USD',
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            confirmed_at: null,
+        };
+    }
+
+    try {
+        // Create a cancellation request to get the quote
+        const response = await duffel.orderCancellations.create({
+            order_id: orderId,
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Duffel Cancellation Quote Error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Confirm order cancellation (actually cancel and refund)
+ */
+export async function confirmOrderCancellation(cancellationId: string) {
+    const duffel = getDuffel();
+
+    if (!duffel) {
+        return {
+            id: cancellationId,
+            status: 'confirmed',
+            refund_amount: '500.00',
+            refund_currency: 'USD',
+            confirmed_at: new Date().toISOString(),
+        };
+    }
+
+    try {
+        const response = await duffel.orderCancellations.confirm(cancellationId);
+        return response.data;
+    } catch (error) {
+        console.error('Duffel Confirm Cancellation Error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get an offer by ID (to display on checkout page)
+ */
+export async function getOffer(offerId: string) {
+    const duffel = getDuffel();
+
+    if (!duffel) {
+        // Mock offer for testing
+        return {
+            id: offerId,
+            total_amount: '525.00',
+            total_currency: 'USD',
+            base_amount: '500.00',
+            owner: { name: 'Safar Airways' },
+            slices: [{
+                origin: { iata_code: 'JFK', name: 'John F. Kennedy International' },
+                destination: { iata_code: 'DXB', name: 'Dubai International' },
+                departure_date: '2026-03-15',
+                duration: 'PT14H30M',
+                segments: [{
+                    operating_carrier: { name: 'Emirates' },
+                    operating_carrier_flight_number: 'EK204',
+                    departure: { at: '2026-03-15T22:00:00' },
+                    arrival: { at: '2026-03-16T12:30:00' },
+                }]
+            }],
+            passengers: [{ type: 'adult' }],
+            conditions: {
+                refund_before_departure: {
+                    allowed: true,
+                    penalty_amount: '150.00',
+                    penalty_currency: 'USD',
+                },
+                change_before_departure: {
+                    allowed: true,
+                    penalty_amount: '75.00',
+                    penalty_currency: 'USD',
+                }
+            },
+            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+        };
+    }
+
+    try {
+        const response = await duffel.offers.get(offerId);
+
+        // Apply markup to the offer
+        const { applyMarkup } = await import('./pricing');
+        const offer = response.data;
+
+        return {
+            ...offer,
+            base_amount: offer.total_amount,
+            total_amount: applyMarkup(offer.total_amount, 'flight').toFixed(2),
+        };
+    } catch (error) {
+        console.error('Duffel Get Offer Error:', error);
+        throw error;
+    }
+}
