@@ -86,10 +86,10 @@ export function EnhancedBookingModal({ tripData, isHalal = false, isOpen, search
     const insurancePrice = travelInsurance ? 89 * totalTravelers : 0
     const estimatedPrice = Math.round((liveFlightPrice || baseFlightPrice) + baseHotelPrice + insurancePrice)
 
-    // Extract destination from trip, with search context fallback
-    // Extract destination from trip data, preferring the first day's location/theme
-    // This is more reliable than trip_name which might be "Anniversary Trip"
-    const destinationRaw = tripData.days[0]?.theme || tripData.trip_name || searchQuery || 'Destination'
+    // Extract destination from trip data
+    // Priority: searchQuery > trip_name (often contains city like "Barcelona Explorer") > days location
+    // Avoid using theme as it contains activity names like "Gaudí's Grand Designs"
+    const destinationRaw = searchQuery || tripData.trip_name || tripData.days[0]?.stay || 'Destination'
     const destination = extractCleanCity(destinationRaw)
 
     // Validation
