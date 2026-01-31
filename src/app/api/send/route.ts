@@ -8,7 +8,7 @@ export async function POST(req: Request) {
         const { name, email, subject, message } = await req.json();
 
         const data = await resend.emails.send({
-            from: 'SafarAI Contact <onboarding@resend.dev>', // Default testing sender
+            from: 'SafarAI Contact <support@safar-ai.co>', // Verified domain sender
             to: (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'knaseem@safar-ai.co').split(',').map(e => e.trim()),
             subject: `Contact Form: ${subject || 'New Message'}`,
             replyTo: email, // So you can reply directly to the user
