@@ -12,6 +12,8 @@ interface AuthContextType {
     signUpWithEmail: (email: string, password: string) => Promise<{ error: Error | null; needsVerification?: boolean }>
     signInWithOAuth: (provider: "google" | "facebook") => Promise<{ error: Error | null }>
     signOut: () => Promise<void>
+    resetPassword: (email: string) => Promise<{ error: Error | null }>
+    resendVerificationEmail: (email: string) => Promise<{ error: Error | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -75,6 +77,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(null)
     }
 
+    const resetPassword = async (email: string) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/auth/reset-password`
+        })
+        return { error: error as Error | null }
+    }
+
+    const resendVerificationEmail = async (email: string) => {
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+            options: {
+                emailRedirectTo: `${window.location.origin}/auth/callback`
+            }
+        })
+        return { error: error as Error | null }
+    }
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -83,7 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             signInWithEmail,
             signUpWithEmail,
             signInWithOAuth,
-            signOut
+            signOut,
+            resetPassword,
+            resendVerificationEmail
         }}>
             {children}
         </AuthContext.Provider>

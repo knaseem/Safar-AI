@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { TravelHUD } from "@/components/features/travel-hud";
 import { AmbientSoundProvider } from "@/components/features/ambient-sound-provider";
 import { FloatingChatBubble } from "@/components/features/floating-chat-bubble";
+import { Analytics } from "@/components/analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
             <FloatingChatBubble />
           </AmbientSoundProvider>
         </AuthProvider>
+        <Analytics />
         <Toaster position="top-center" richColors />
         {/* Travelpayouts Verification */}
         <Script

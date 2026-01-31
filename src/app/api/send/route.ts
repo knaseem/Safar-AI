@@ -1,16 +1,49 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { contactRatelimit, isRateLimitEnabled, getRateLimitIdentifier } from '@/lib/ratelimit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Simple HTML escape function to prevent XSS in emails
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 export async function POST(req: Request) {
     try {
+        // Rate limiting check (5 requests per minute for contact form)
+        if (isRateLimitEnabled()) {
+            const identifier = getRateLimitIdentifier(req);
+            const { success, remaining } = await contactRatelimit.limit(identifier);
+
+            if (!success) {
+                return NextResponse.json(
+                    { error: "Too many messages. Please wait a moment before trying again." },
+                    {
+                        status: 429,
+                        headers: { 'X-RateLimit-Remaining': remaining.toString() }
+                    }
+                );
+            }
+        }
+
         const { name, email, subject, message } = await req.json();
+
+        // Escape user input for HTML email
+        const safeName = escapeHtml(name || '');
+        const safeEmail = escapeHtml(email || '');
+        const safeSubject = escapeHtml(subject || '');
+        const safeMessage = escapeHtml(message || '');
 
         const data = await resend.emails.send({
             from: 'SafarAI Contact <support@safar-ai.co>', // Verified domain sender
             to: (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'knaseem@safar-ai.co').split(',').map(e => e.trim()),
-            subject: `Contact Form: ${subject || 'New Message'}`,
+            subject: `Contact Form: ${safeSubject || 'New Message'}`,
             // replyTo removed as requested
             text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
             html: `
@@ -50,22 +83,22 @@ export async function POST(req: Request) {
                                 <table style="width: 100%; border-collapse: separate; border-spacing: 0 15px;">
                                     <tr>
                                         <td style="width: 30%; color: #666666; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Sender</td>
-                                        <td style="color: #ffffff; font-size: 16px; font-weight: 500;">${name}</td>
+                                        <td style="color: #ffffff; font-size: 16px; font-weight: 500;">${safeName}</td>
                                     </tr>
                                     <tr>
                                         <td style="color: #666666; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">From Email</td>
                                         <td style="color: #ffffff; font-size: 16px;">
-                                            <a href="mailto:${email}" style="color: #ffffff; text-decoration: none; border-bottom: 1px solid #333333;">${email}</a>
+                                            <a href="mailto:${safeEmail}" style="color: #ffffff; text-decoration: none; border-bottom: 1px solid #333333;">${safeEmail}</a>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td style="color: #666666; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Subject</td>
-                                        <td style="color: #ffffff; font-size: 16px;">${subject}</td>
+                                        <td style="color: #ffffff; font-size: 16px;">${safeSubject}</td>
                                     </tr>
                                 </table>
 
                                 <div style="margin-top: 35px; background-color: rgba(255,255,255,0.03); border: 1px solid #222222; border-radius: 8px; padding: 25px;">
-                                    <p style="margin: 0; color: #e0e0e0; line-height: 1.8; font-size: 15px; white-space: pre-wrap;">${message}</p>
+                                    <p style="margin: 0; color: #e0e0e0; line-height: 1.8; font-size: 15px; white-space: pre-wrap;">${safeMessage}</p>
                                 </div>
                             </div>
 

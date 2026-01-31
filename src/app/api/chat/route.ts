@@ -1,11 +1,28 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { chatRatelimit, isRateLimitEnabled, getRateLimitIdentifier } from "@/lib/ratelimit";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting check
+    if (isRateLimitEnabled()) {
+      const identifier = getRateLimitIdentifier(req);
+      const { success, remaining } = await chatRatelimit.limit(identifier);
+
+      if (!success) {
+        return NextResponse.json(
+          { error: "Too many requests. Please wait a moment before trying again." },
+          {
+            status: 429,
+            headers: { 'X-RateLimit-Remaining': remaining.toString() }
+          }
+        );
+      }
+    }
+
     const { prompt, isHalal, selection } = await req.json();
     const supabase = await createClient();
 
@@ -22,6 +39,7 @@ export async function POST(req: Request) {
 
       if (userProfile) profile = userProfile;
     }
+
 
     // 2. Construct the Prompt
     const systemPrompt = `

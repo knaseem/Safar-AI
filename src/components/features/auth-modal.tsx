@@ -6,6 +6,7 @@ import { X, Mail, Lock, User, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
+import { PasswordResetModal } from "./password-reset-modal"
 
 interface AuthModalProps {
     isOpen: boolean
@@ -17,6 +18,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
+    const [showPasswordReset, setShowPasswordReset] = useState(false)
     const { signInWithEmail, signUpWithEmail, signInWithOAuth } = useAuth()
 
     const handleEmailAuth = async (e: React.FormEvent) => {
@@ -178,6 +180,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                                     />
                                 </div>
 
+                                {/* Forgot Password Link - Only show on sign in */}
+                                {mode === "signin" && (
+                                    <div className="text-right">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPasswordReset(true)}
+                                            className="text-xs text-white/40 hover:text-white/60 transition-colors"
+                                        >
+                                            Forgot password?
+                                        </button>
+                                    </div>
+                                )}
+
                                 <Button
                                     type="submit"
                                     disabled={loading}
@@ -210,6 +225,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     </motion.div>
                 </motion.div>
             )}
+
+            {/* Password Reset Modal */}
+            <PasswordResetModal
+                isOpen={showPasswordReset}
+                onClose={() => setShowPasswordReset(false)}
+                onBackToSignIn={() => setShowPasswordReset(false)}
+            />
         </AnimatePresence>
     )
 }
