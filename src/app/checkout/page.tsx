@@ -118,6 +118,16 @@ function CheckoutContent() {
 
         setSubmitting(true)
         try {
+            // Extract offer details for email
+            const firstSlice = offer.slices?.[0]
+            const firstSegment = firstSlice?.segments?.[0]
+            const offerDetails = offerType === "flight" ? {
+                origin: firstSlice?.origin?.iata_code,
+                destination: firstSlice?.destination?.iata_code,
+                departureDate: firstSlice?.departure_date,
+                airline: firstSegment?.operating_carrier?.name,
+            } : undefined
+
             const response = await fetch("/api/orders", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -127,6 +137,7 @@ function CheckoutContent() {
                     totalAmount: offer.total_amount,
                     currency: offer.total_currency,
                     type: offerType,
+                    offerDetails,
                 }),
             })
 

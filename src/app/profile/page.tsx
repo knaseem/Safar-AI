@@ -14,6 +14,7 @@ import { VibeCheck } from "@/components/features/vibe-check"
 import { toast } from "sonner"
 import { BookingDetailModal } from "@/components/features/booking-detail-modal"
 import { NeighborhoodRadar } from "@/components/features/neighborhood-radar"
+import { DuffelBookings } from "@/components/features/duffel-bookings"
 import { getCoordinates } from "@/lib/geocoding"
 
 export default function ProfilePage() {
@@ -23,7 +24,7 @@ export default function ProfilePage() {
     const [bookings, setBookings] = useState<any[]>([])
     const [savedTrips, setSavedTrips] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState<'trips' | 'bookings'>('bookings')
+    const [activeTab, setActiveTab] = useState<'duffel' | 'bookings' | 'trips'>('duffel')
     const [showPassport, setShowPassport] = useState(false)
     const [showVibeCheck, setShowVibeCheck] = useState(false)
     const [selectedBooking, setSelectedBooking] = useState<any>(null)
@@ -197,15 +198,27 @@ export default function ProfilePage() {
 
                 {/* Main Tabs */}
                 <div className="space-y-6">
-                    <div className="flex gap-8 border-b border-white/5 px-2">
+                    <div className="flex gap-8 border-b border-white/5 px-2 overflow-x-auto">
+                        <button
+                            onClick={() => setActiveTab('duffel')}
+                            className={cn(
+                                "pb-4 text-sm font-bold uppercase tracking-widest relative transition-colors whitespace-nowrap",
+                                activeTab === 'duffel' ? "text-emerald-500" : "text-white/40 hover:text-white"
+                            )}
+                        >
+                            My Bookings
+                            {activeTab === 'duffel' && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
+                            )}
+                        </button>
                         <button
                             onClick={() => setActiveTab('bookings')}
                             className={cn(
-                                "pb-4 text-sm font-bold uppercase tracking-widest relative transition-colors",
+                                "pb-4 text-sm font-bold uppercase tracking-widest relative transition-colors whitespace-nowrap",
                                 activeTab === 'bookings' ? "text-emerald-500" : "text-white/40 hover:text-white"
                             )}
                         >
-                            Concierge Bookings
+                            Concierge Requests
                             {activeTab === 'bookings' && (
                                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
                             )}
@@ -213,11 +226,11 @@ export default function ProfilePage() {
                         <button
                             onClick={() => setActiveTab('trips')}
                             className={cn(
-                                "pb-4 text-sm font-bold uppercase tracking-widest relative transition-colors",
+                                "pb-4 text-sm font-bold uppercase tracking-widest relative transition-colors whitespace-nowrap",
                                 activeTab === 'trips' ? "text-emerald-500" : "text-white/40 hover:text-white"
                             )}
                         >
-                            Saved Itineraries (AI)
+                            Saved Itineraries
                             {activeTab === 'trips' && (
                                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
                             )}
@@ -226,6 +239,12 @@ export default function ProfilePage() {
 
                     {/* Content Area */}
                     <div className="min-h-[400px]">
+                        {/* Duffel Direct Bookings */}
+                        {activeTab === 'duffel' && (
+                            <DuffelBookings />
+                        )}
+
+                        {/* Concierge Booking Requests */}
                         {activeTab === 'bookings' && (
                             <div className="grid gap-8">
                                 {/* Destination Intelligence Section */}

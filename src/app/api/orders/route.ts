@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createOrder, getOrder } from "@/lib/duffel"
+import { sendBookingConfirmation } from "@/lib/booking-emails"
 
 // POST - Create a new order (book)
 export async function POST(request: Request) {
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { offerId, passengers, totalAmount, currency, type } = body
+        const { offerId, passengers, totalAmount, currency, type, offerDetails } = body
 
         if (!offerId || !passengers || !totalAmount) {
             return NextResponse.json(
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
                 metadata: {
                     booking_reference: order.booking_reference,
                     created_at: order.created_at,
+                    offer_details: offerDetails,
                 },
             })
             .select()
@@ -67,6 +69,20 @@ export async function POST(request: Request) {
             console.error("Database error saving order:", dbError)
             // Order was created in Duffel, but failed to save locally
             // Still return success with the Duffel order info
+        }
+
+        // Send confirmation email to first passenger (or user email)
+        const primaryPassenger = passengers[0]
+        if (primaryPassenger?.email) {
+            await sendBookingConfirmation({
+                to: primaryPassenger.email,
+                passengerName: `${primaryPassenger.given_name} ${primaryPassenger.family_name}`,
+                bookingReference: order.booking_reference,
+                type: type || "flight",
+                totalAmount: totalAmount,
+                currency: currency || "USD",
+                details: offerDetails,
+            })
         }
 
         return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { getOrder, getOrderCancellationQuote, confirmOrderCancellation } from "@/lib/duffel"
+import { sendCancellationConfirmation } from "@/lib/booking-emails"
 
 // GET - Get single order details
 export async function GET(
@@ -131,6 +132,19 @@ export async function DELETE(
             })
             .eq("id", id)
 
+        // Step 4: Send cancellation email
+        const passengers = order.passengers as any[]
+        const primaryPassenger = passengers?.[0]
+        if (primaryPassenger?.email) {
+            await sendCancellationConfirmation({
+                to: primaryPassenger.email,
+                passengerName: `${primaryPassenger.given_name} ${primaryPassenger.family_name}`,
+                bookingReference: order.metadata?.booking_reference || order.duffel_order_id,
+                refundAmount: cancellation.refund_amount || "0.00",
+                currency: cancellation.refund_currency || order.currency,
+            })
+        }
+
         return NextResponse.json({
             success: true,
             refund_amount: cancellation.refund_amount,
@@ -145,3 +159,4 @@ export async function DELETE(
         )
     }
 }
+
